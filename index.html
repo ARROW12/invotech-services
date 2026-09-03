@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Databricks Lakehouse Phase 1 — Production Roadmap</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        db: {
+                            orange: '#FF3621',
+                            dark: '#1B252C',
+                            navy: '#0B131B',
+                            card: '#151E28',
+                            border: '#2C3B47',
+                            accent: '#00A8E8'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome & Devicons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
+</head>
+<body class="bg-db-navy text-slate-200 font-sans antialiased min-h-screen">
+
+    <!-- Header Section -->
+    <header class="border-b border-db-border bg-db-dark/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-db-orange/10 rounded-lg border border-db-orange/30">
+                    <i class="fa-solid me-1 fa-layer-group text-2xl text-db-orange"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white tracking-tight">Databricks Lakehouse — Phase 1 Roadmap</h1>
+                    <p class="text-xs text-slate-400">Foundation & Finance Domain Productionization · 10–12 Weeks Target</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Live Plan
+                </span>
+                <button id="toggle-theme" class="p-2 rounded-lg bg-db-card border border-db-border hover:border-slate-500 text-slate-300">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+        <!-- Tech Stack & Tools Bar -->
+        <section class="bg-db-card rounded-xl p-6 border border-db-border shadow-xl">
+            <h2 class="text-xs font-uppercase tracking-wider text-slate-400 uppercase font-semibold mb-4">Architecture & Tech Stack Integration</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-4">
+                <div class="flex flex-col items-center justify-center p-3 rounded-lg bg-db-dark border border-db-border/60 hover:border-db-orange transition">
+                    <i class="fa-solid fa-database text-3xl text-db-orange mb-2"></i>
+                    <span class="text-xs font-medium text-slate-300">Databricks Lakehouse</span>
+                </div>
+                <div class="flex flex-col items-center justify-center p-3 rounded-lg bg-db-dark border border-db-border/60 hover:border-blue-400 transition">
+                    <i class="devicon-microsoftsqlserver-plain text-3xl text-blue-400 mb-2"></i>
+                    <span class="text-xs font-medium text-slate-300">SQL Server</span>
+                </div>
+                <div class="flex flex-col items-center justify-center p-3 rounded-lg bg-db-dark border border-db-border/60 hover:border-blue-500 transition">
+                    <i class="fa-solid fa-building-columns text-3xl text-blue-500 mb-2"></i>
+                    <span class="text-xs font-medium text-slate-300">Business Central</span>
+                </div>
+                <div class="flex flex-col items-center justify-center p-3 rounded-lg bg-db-dark border border-db-border/60 hover:border-orange-500 transition">
+                    <i class="fa-brands fa-hubspot text-3xl text-orange-500 mb-2"></i>
+                    <span class="text-xs font-medium text-slate-300">HubSpot CRM</span>
+                </div>
+                <div class="flex flex-col items-center justify-center p-3 rounded-lg bg-db-dark border border-db-border/60 hover:border-yellow-400 transition">
+                    <i class="devicon-python-plain text-3xl text-yellow-400 mb-2"></i>
+                    <span class="text-xs font-medium text-slate-300">PySpark / Delta</span>
+                </div>
+                <div class="flex flex-col items-center justify-center p-3 rounded-lg bg-db-dark border border-db-border/60 hover:border-emerald-400 transition">
+                    <i class="fa-solid fa-shield-halved text-3xl text-emerald-400 mb-2"></i>
+                    <span class="text-xs font-medium text-slate-300">Unity Catalog</span>
+                </div>
+                <div class="flex flex-col items-center justify-center p-3 rounded-lg bg-db-dark border border-db-border/60 hover:border-purple-400 transition">
+                    <i class="fa-solid fa-wand-magic-sparkles text-3xl text-purple-400 mb-2"></i>
+                    <span class="text-xs font-medium text-slate-300">Genie AI / BI</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Phase Navigation Tabs -->
+        <section class="space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Execution Milestones & Phases</h2>
+                    <p class="text-sm text-slate-400">Click phases to expand detailed delivery plans, dependencies, and deliverables.</p>
+                </div>
+                <!-- Interactive Filter -->
+                <div class="flex gap-2 bg-db-card p-1 rounded-lg border border-db-border text-xs">
+                    <button onclick="filterPhase('all')" class="phase-btn active px-3 py-1.5 rounded-md bg-db-orange text-white font-medium">All Phases</button>
+                    <button onclick="filterPhase('foundation')" class="phase-btn px-3 py-1.5 rounded-md text-slate-400 hover:text-white">Foundation</button>
+                    <button onclick="filterPhase('data')" class="phase-btn px-3 py-1.5 rounded-md text-slate-400 hover:text-white">Data & DQ</button>
+                    <button onclick="filterPhase('analytics')" class="phase-btn px-3 py-1.5 rounded-md text-slate-400 hover:text-white">Analytics & AI</button>
+                </div>
+            </div>
+
+            <!-- Timeline Cards Grid -->
+            <div class="grid grid-cols-1 gap-6" id="phase-container">
+
+                <!-- Phase 1 -->
+                <div class="phase-card foundation bg-db-card border border-db-border rounded-xl p-6 hover:border-db-orange/50 transition">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-db-orange/20 text-db-orange font-bold text-sm border border-db-orange/40">1</span>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">Mobilization, Assessment & KPI Definition</h3>
+                                <p class="text-xs text-slate-400">Weeks 1 – 2 · Workstream 1[span_0](start_span)[span_0](end_span)</p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 text-xs border border-slate-700">Gating Phase</span>
+                    </div>
+                    <p class="text-sm text-slate-300 mb-4">Profile source systems (SQL Server, Business Central, HubSpot), establish API access, and define SLA thresholds and data ownership[span_1](start_span)[span_1](end_span).</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div class="bg-db-dark p-3 rounded-lg border border-db-border">
+                            <span class="text-db-orange font-semibold block mb-1">Key Deliverables[span_2](start_span)[span_2](end_span)</span>
+                            <ul class="list-disc list-inside text-slate-300 space-y-1">
+                                <li>Source system API feasibility assessment[span_3](start_span)[span_3](end_span)</li>
+                                <li>Signed-off KPI Definition Register[span_4](start_span)[span_4](end_span)</li>
+                                <li>Freshness & SLA Definition Document[span_5](start_span)[span_5](end_span)</li>
+                            </ul>
+                        </div>
+                        <div class="bg-db-dark p-3 rounded-lg border border-db-border">
+                            <span class="text-amber-400 font-semibold block mb-1">Critical Dependencies[span_6](start_span)[span_6](end_span)</span>
+                            <p class="text-slate-300">Definitions of "critical", "at risk", "past due", and "billable work" must be locked in before modelling begins[span_7](start_span)[span_7](end_span).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 2 -->
+                <div class="phase-card foundation bg-db-card border border-db-border rounded-xl p-6 hover:border-db-orange/50 transition">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-db-orange/20 text-db-orange font-bold text-sm border border-db-orange/40">2</span>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">Platform Foundation & Unity Catalog Setup</h3>
+                                <p class="text-xs text-slate-400">Weeks 2 – 3 · Workstream 2[span_8](start_span)[span_8](end_span)</p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 text-xs border border-slate-700">Infrastructure</span>
+                    </div>
+                    <p class="text-sm text-slate-300 mb-4">Establish Dev/Test/Prod environments inside the client workspace, configure Unity Catalog RBAC, and automate deployments via Databricks Asset Bundles[span_9](start_span)[span_9](end_span).</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div class="bg-db-dark p-3 rounded-lg border border-db-border">
+                            <span class="text-db-orange font-semibold block mb-1">Key Deliverables[span_10](start_span)[span_10](end_span)</span>
+                            <ul class="list-disc list-inside text-slate-300 space-y-1">
+                                <li>Dev, Test & Prod environment setup[span_11](start_span)[span_11](end_span)</li>
+                                <li>Unity Catalog RBAC (Row/Column level)[span_12](start_span)[span_12](end_span)</li>
+                                <li>Git CI/CD Automation Pipelines[span_13](start_span)[span_13](end_span)</li>
+                            </ul>
+                        </div>
+                        <div class="bg-db-dark p-3 rounded-lg border border-db-border">
+                            <span class="text-blue-400 font-semibold block mb-1">Security Guardrails[span_14](start_span)[span_14](end_span)</span>
+                            <p class="text-slate-300">Strict execution within client cloud boundary — zero data egress[span_15](start_span)[span_15](end_span).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 3 -->
+                <div class="phase-card data bg-db-card border border-db-border rounded-xl p-6 hover:border-db-orange/50 transition">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-db-orange/20 text-db-orange font-bold text-sm border border-db-orange/40">3</span>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">Automated Ingestion & Daily Snapshot Capture</h3>
+                                <p class="text-xs text-slate-400">Weeks 3 – 5 · Workstream 3[span_16](start_span)[span_16](end_span)</p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded bg-rose-500/10 text-rose-400 text-xs border border-rose-500/30">Day-1 Mandatory</span>
+                    </div>
+                    <p class="text-sm text-slate-300 mb-4">Build production connectors for API/CDC/files, run Bronze historical backloads, and immediately begin daily snapshot capturing[span_17](start_span)[span_17](end_span).</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div class="bg-db-dark p-3 rounded-lg border border-db-border">
+                            <span class="text-db-orange font-semibold block mb-1">Key Deliverables[span_18](start_span)[span_18](end_span)</span>
+                            <ul class="list-disc list-inside text-slate-300 space-y-1">
+                                <li>Production API/CDC connectors[span_19](start_span)[span_19](end_span)</li>
+                                <li>Historical backload & daily incremental jobs[span_20](start_span)[span_20](end_span)</li>
+                                <li>Point-in-time historization layer[span_21](start_span)[span_21](end_span)</li>
+                            </ul>
+                        </div>
+                        <div class="bg-db-dark p-3 rounded-lg border border-db-border">
+                            <span class="text-rose-400 font-semibold block mb-1">Critical Constraint[span_22](start_span)[span_22](end_span)</span>
+                            <p class="text-slate-300">Snapshots cannot be backfilled[span_23](start_span)[span_23](end_span)! Daily capture must start immediately on Day 1 of ingestion to compute AR aging & forecast accuracy[span_24](start_span)[span_24](end_span).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 4 -->
+                <div class="phase-card data bg-db-card border border-db-border rounded-xl p-6 hover:border-db-orange/50 transition">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-db-orange/20 text-db-orange font-bold text-sm border border-db-orange/40">4</span>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">Conformed Data Modelling & Data Quality Framework</h3>
+                                <p class="text-xs text-slate-400">Weeks 5 – 8 · Workstreams 4 & 5[span_25](start_span)[span_25](end_span)</p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 text-xs border border-slate-700">Core Engine</span>
+                    </div>
+                    <p class="text-sm text-slate-300 mb-4">Build Silver conformed models (Customer, Vendor, Job, GL Account), implement entity resolution across systems, and deploy automated DQ checks[span_26](start_span)[span_26](end_span).</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div class="bg-db-dark p-3 rounded-lg border border-db-border">
+                            <span class="text-db-orange font-semibold block mb-1">Key Deliverables[span_27](start_span)[span_27](end_span)</span>
+                            <ul class="list-disc list-inside text-slate-300 space-y-1">
+                                <li>Conformed Silver & Gold Data Products[span_28](start_span)[span_28](end_span)</li>
+                                <li>Cross-system entity matching engine[span_29](start_span)[span_29](end_span)</li>
+                                <li>DQ Rule Library & Exception Register[span_30](start_span)[span_30](end_span)</li>
+                            </ul>
+                        </div>
+                        <div class="bg-db-dark p-3 rounded-lg border border-db-border">
+                            <span class="text-amber-400 font-semibold block mb-1">Client Remediation Loop[span_31](start_span)[span_31](end_span)</span>
+                            <p class="text-slate-300">Data quality issues are reported automatically, but source corrections are performed by client team before dashboard validation[span_32](start_span)[span_32](end_span).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 5 -->
+                <div class="phase-card analytics bg-db-card border border-db-border rounded-xl p-6 hover:border-db-orange/50 transition">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-db-orange/20 text-db-orange font-bold text-sm border border-db-orange/40">5</span>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">Daily Finance Operating View & Genie Natural Language Space</h3>
+                                <p class="text-xs text-slate-400">Weeks 8 – 10 · Workstreams 6 & 7[span_33](start_span)[span_33](end_span)</p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded bg-purple-500/10 text-purple-400 text-xs border border-purple-500/30">Business Value</span>
+                    </div>
+                    <p class="text-sm text-slate-300 mb-4">Build 7-area Daily Finance operating view in Databricks SQL with executive/controller/AP views and configure Databricks Genie for natural language Q&A[span_34](start_span)[span_34](end_span).</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div class="bg-db-dark p-3 rounded-lg border border-db-border">
+                            <span class="text-db-orange font-semibold block mb-1">Key Deliverables[span_35](start_span)[span_35](end_span)</span>
+                            <ul class="list-disc list-inside text-slate-300 space-y-1">
+                                <li>Daily Finance Operating View Dashboard[span_36](start_span)[span_36](end_span)</li>
+                                <li>3 Role-Based Persona Views[span_37](start_span)[span_37](end_span)</li>
+                                <li>Databricks Genie space with certified answers[span_38](start_span)[span_38](end_span)</li>
+                            </ul>
+                        </div>
+                        <div class="bg-db-dark p-3 rounded-lg border border-db-border">
+                            <span class="text-purple-400 font-semibold block mb-1">SLA Target[span_39](start_span)[span_39](end_span)</span>
+                            <p class="text-slate-300">Dashboards & automated exception alerts delivered before the start of business each working day[span_40](start_span)[span_40](end_span).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 6 -->
+                <div class="phase-card analytics bg-db-card border border-db-border rounded-xl p-6 hover:border-db-orange/50 transition">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-db-orange/20 text-db-orange font-bold text-sm border border-db-orange/40">6</span>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">Validation, UAT, Production Handover & Hypercare</h3>
+                                <p class="text-xs text-slate-400">Weeks 10 – 12 · Workstream 8[span_41](start_span)[span_41](end_span)</p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 text-xs border border-emerald-500/30">Go-Live</span>
+                    </div>
+                    <p class="text-sm text-slate-300 mb-4">Reconcile data with legacy source systems, guide business UAT, deploy live monitoring runbooks, and conduct knowledge transfer[span_42](start_span)[span_42](end_span).</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div class="bg-db-dark p-3 rounded-lg border border-db-border">
+                            <span class="text-db-orange font-semibold block mb-1">Key Deliverables[span_43](start_span)[span_43](end_span)</span>
+                            <ul class="list-disc list-inside text-slate-300 space-y-1">
+                                <li>Reconciliation Pack vs Source Systems[span_44](start_span)[span_44](end_span)</li>
+                                <li>Production Release & Technical Runbooks[span_45](start_span)[span_45](end_span)</li>
+                                <li>Post Go-Live Hypercare Support[span_46](start_span)[span_46](end_span)</li>
+                            </ul>
+                        </div>
+                        <div class="bg-db-dark p-3 rounded-lg border border-db-border">
+                            <span class="text-emerald-400 font-semibold block mb-1">Staged Sign-off[span_47](start_span)[span_47](end_span)</span>
+                            <p class="text-slate-300">Incremental value release as each functional area clears validation[span_48](start_span)[span_48](end_span).</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Daily Finance Operating View Scope Checklist -->
+        <section class="bg-db-card border border-db-border rounded-xl p-6 shadow-xl">
+            <h2 class="text-xl font-bold text-white mb-2">Daily Finance Operating View Scope (7 Focus Areas)[span_49](start_span)[span_49](end_span)</h2>
+            <p class="text-xs text-slate-400 mb-6">Interactive functional coverage matrix required before start of business each working day[span_50](start_span)[span_50](end_span).</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+                <div class="p-4 rounded-lg bg-db-dark border border-db-border">
+                    <div class="flex items-center gap-2 mb-2 font-semibold text-db-orange">
+                        <i class="fa-solid fa-wallet"></i> 1. Cash Position & Liquidity[span_51](start_span)[span_51](end_span)
+                    </div>
+                    <p class="text-slate-300">Current balance, 7-day forecast (AR/AP timing), inflows/outflows, funding risks[span_52](start_span)[span_52](end_span).</p>
+                </div>
+                <div class="p-4 rounded-lg bg-db-dark border border-db-border">
+                    <div class="flex items-center gap-2 mb-2 font-semibold text-db-orange">
+                        <i class="fa-solid fa-hand-holding-dollar"></i> 2. Receivables & Collections[span_53](start_span)[span_53](end_span)
+                    </div>
+                    <p class="text-slate-300">Cash collected yesterday, past-due accounts, commitments, billing disputes, daily priorities[span_54](start_span)[span_54](end_span).</p>
+                </div>
+                <div class="p-4 rounded-lg bg-db-dark border border-db-border">
+                    <div class="flex items-center gap-2 mb-2 font-semibold text-db-orange">
+                        <i class="fa-solid fa-file-invoice-dollar"></i> 3. Accounts Payable[span_55](start_span)[span_55](end_span)
+                    </div>
+                    <p class="text-slate-300">Critical vendor payments due, credit hold risk, approval bottlenecks, major disbursements[span_56](start_span)[span_56](end_span).</p>
+                </div>
+                <div class="p-4 rounded-lg bg-db-dark border border-db-border">
+                    <div class="flex items-center gap-2 mb-2 font-semibold text-db-orange">
+                        <i class="fa-solid fa-chart-line"></i> 4. Billing & Revenue Capture[span_57](start_span)[span_57](end_span)
+                    </div>
+                    <p class="text-slate-300">Invoices issued yesterday, unbilled work, open change orders, unbilled revenue at risk[span_58](start_span)[span_58](end_span).</p>
+                </div>
+                <div class="p-4 rounded-lg bg-db-dark border border-db-border">
+                    <div class="flex items-center gap-2 mb-2 font-semibold text-db-orange">
+                        <i class="fa-solid fa-scale-balanced"></i> 5. Controls & Close[span_59](start_span)[span_59](end_span)
+                    </div>
+                    <p class="text-slate-300">Approval delays, reconciliation exceptions, items needing action, month-end close progress[span_60](start_span)[span_60](end_span).</p>
+                </div>
+                <div class="p-4 rounded-lg bg-db-dark border border-db-border">
+                    <div class="flex items-center gap-2 mb-2 font-semibold text-db-orange">
+                        <i class="fa-solid fa-user-check"></i> 6. Payroll & Compliance[span_61](start_span)[span_61](end_span)
+                    </div>
+                    <p class="text-slate-300">Payroll readiness, missing timesheets, expense reports, tax & compliance alerts[span_62](start_span)[span_62](end_span).</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Data Engineer Expert Value-Add Suggestions -->
+        <section class="bg-gradient-to-r from-db-card via-db-dark to-db-card border border-db-orange/30 rounded-xl p-6 shadow-2xl">
+            <div class="flex items-center gap-3 mb-4">
+                <i class="fa-solid fa-lightbulb text-2xl text-yellow-400"></i>
+                <div>
+                    <h2 class="text-xl font-bold text-white">Data Engineering Enhancements & Risk Mitigations</h2>
+                    <p class="text-xs text-slate-400">Proactive architectural recommendations to strengthen Phase 1 execution.</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div class="p-4 rounded-lg bg-db-dark/80 border border-db-border">
+                    <h4 class="font-bold text-db-orange mb-1">1. Adopt Delta Live Tables (DLT) for Ingestion & DQ</h4>
+                    <p class="text-slate-300">Instead of raw PySpark scripts, utilize Databricks DLT for Bronze/Silver. DLT offers built-in expectations for DQ thresholds, auto-lineage, and automatic pipeline retries with zero manual orchestration setup.</p>
+                </div>
+                <div class="p-4 rounded-lg bg-db-dark/80 border border-db-border">
+                    <h4 class="font-bold text-db-orange mb-1">2. Synthetic Snapshot Backfill Strategy</h4>
+                    <p class="text-slate-300">Since daily snapshots cannot be backfilled from source systems[span_63](start_span)[span_63](end_span), create a synthetic backfill script using historical log tables during Week 2 to give executives 90-day trendlines immediately on Day 1.</p>
+                </div>
+                <div class="p-4 rounded-lg bg-db-dark/80 border border-db-border">
+                    <h4 class="font-bold text-db-orange mb-1">3. FinOps & Serverless Compute Governance</h4>
+                    <p class="text-slate-300">Enforce Databricks Serverless SQL for Genie & Dashboards, and set auto-termination on ETL clusters to 15 minutes. Implement budget alert webhooks to prevent compute cost surprises.</p>
+                </div>
+                <div class="p-4 rounded-lg bg-db-dark/80 border border-db-border">
+                    <h4 class="font-bold text-db-orange mb-1">4. Contractual SLA on Client Source Remediation</h4>
+                    <p class="text-slate-300">Establish a strict 48-hour client SLA for fixing source-side data errors[span_64](start_span)[span_64](end_span). Add an automated fallback layer to quarantine bad records so remaining clean data can still populate morning dashboards.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-db-border py-6 bg-db-dark">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+            Databricks Lakehouse Phase 1 Plan · Built for GitHub Pages Deployment
+        </div>
+    </footer>
+
+    <!-- Interactive Filtering Script -->
+    <script>
+        function filterPhase(category) {
+            const cards = document.querySelectorAll('.phase-card');
+            const buttons = document.querySelectorAll('.phase-btn');
+
+            buttons.forEach(btn => btn.classList.remove('bg-db-orange', 'text-white'));
+            event.target.classList.add('bg-db-orange', 'text-white');
+
+            cards.forEach(card => {
+                if (category === 'all' || card.classList.contains(category)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Dark/Light Theme Toggle Simple Script
+        document.getElementById('toggle-theme').addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+        });
+    </script>
+</body>
+</html>
