@@ -110,10 +110,10 @@
                     <h2 class="text-xl font-bold theme-text-bright text-white flex items-center gap-2">
                         <i class="fa-solid fa-sitemap text-db-orange"></i> High-Level Lakehouse Target Architecture
                     </h2>
-                    <p class="text-xs theme-text-muted text-slate-400">Interactive end-to-end data flow: Source Systems → Medallion Layer → Role-Based Analytics[span_0](start_span)[span_0](end_span).</p>
+                    <p class="text-xs theme-text-muted text-slate-400">Interactive end-to-end data flow: Source Systems → Medallion Layer → Role-Based Analytics.</p>
                 </div>
                 <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                    <i class="fa-solid fa-shield-halved mr-1"></i> Unity Catalog Governed[span_1](start_span)[span_1](end_span)
+                    <i class="fa-solid fa-shield-halved mr-1"></i> Unity Catalog Governed
                 </span>
             </div>
 
@@ -123,55 +123,55 @@
                 <!-- Stage 1: Sources -->
                 <div class="space-y-3">
                     <div class="font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-                        <span>1. Source Systems[span_2](start_span)[span_2](end_span)</span>
+                        <span>1. Source Systems</span>
                         <i class="fa-solid fa-arrow-right text-db-orange hidden lg:inline"></i>
                     </div>
                     
                     <div class="p-3.5 rounded-lg theme-subcard bg-db-dark border border-db-border space-y-2 hover:border-blue-400 transition cursor-pointer" onclick="openModal('sqlserver')">
                         <div class="font-semibold text-blue-400 flex items-center justify-between">
-                            <span><i class="devicon-microsoftsqlserver-plain mr-1.5"></i> SQL Server[span_3](start_span)[span_3](end_span)</span>
-                            <span class="text-[10px] opacity-75">Internal Portal[span_4](start_span)[span_4](end_span)</span>
+                            <span><i class="devicon-microsoftsqlserver-plain mr-1.5"></i> SQL Server</span>
+                            <span class="text-[10px] opacity-75">Internal Portal</span>
                         </div>
-                        <p class="theme-text-muted text-slate-400 text-[11px]">Field assignments, job transactions, equipment history, operator logs[span_5](start_span)[span_5](end_span).</p>
+                        <p class="theme-text-muted text-slate-400 text-[11px]">Field assignments, job transactions, equipment history, operator logs.</p>
                     </div>
 
                     <div class="p-3.5 rounded-lg theme-subcard bg-db-dark border border-db-border space-y-2 hover:border-blue-500 transition cursor-pointer" onclick="openModal('bc')">
                         <div class="font-semibold text-blue-500 flex items-center justify-between">
-                            <span><i class="fa-solid fa-building-columns mr-1.5"></i> Business Central[span_6](start_span)[span_6](end_span)</span>
-                            <span class="text-[10px] opacity-75">Dynamics 365 ERP[span_7](start_span)[span_7](end_span)</span>
+                            <span><i class="fa-solid fa-building-columns mr-1.5"></i> Business Central</span>
+                            <span class="text-[10px] opacity-75">Dynamics 365 ERP</span>
                         </div>
-                        <p class="theme-text-muted text-slate-400 text-[11px]">GL, AR/AP, invoices, costs, revenue, assets, rental tickets[span_8](start_span)[span_8](end_span).</p>
+                        <p class="theme-text-muted text-slate-400 text-[11px]">GL, AR/AP, invoices, costs, revenue, assets, rental tickets.</p>
                     </div>
 
                     <div class="p-3.5 rounded-lg theme-subcard bg-db-dark border border-db-border space-y-2 hover:border-orange-500 transition cursor-pointer" onclick="openModal('hubspot')">
                         <div class="font-semibold text-orange-500 flex items-center justify-between">
-                            <span><i class="fa-brands fa-hubspot mr-1.5"></i> HubSpot CRM[span_9](start_span)[span_9](end_span)</span>
-                            <span class="text-[10px] opacity-75">Sales Platform[span_10](start_span)[span_10](end_span)</span>
+                            <span><i class="fa-brands fa-hubspot mr-1.5"></i> HubSpot CRM</span>
+                            <span class="text-[10px] opacity-75">Sales Platform</span>
                         </div>
-                        <p class="theme-text-muted text-slate-400 text-[11px]">Companies, contacts, deals, pipeline stages, owners[span_11](start_span)[span_11](end_span).</p>
+                        <p class="theme-text-muted text-slate-400 text-[11px]">Companies, contacts, deals, pipeline stages, owners.</p>
                     </div>
                 </div>
 
                 <!-- Stage 2: Bronze Ingestion -->
                 <div class="space-y-3">
                     <div class="font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-                        <span>2. Bronze Layer[span_12](start_span)[span_12](end_span)</span>
+                        <span>2. Bronze Layer</span>
                         <i class="fa-solid fa-arrow-right text-db-orange hidden lg:inline"></i>
                     </div>
                     
                     <div class="p-4 rounded-lg theme-subcard bg-db-dark border border-amber-600/40 space-y-3 h-[calc(100%-1.75rem)] flex flex-col justify-between">
                         <div class="space-y-2">
                             <div class="font-semibold text-amber-500 flex items-center gap-1.5">
-                                <i class="fa-solid fa-cubes text-sm"></i> Raw Ingestion & Snapshots[span_13](start_span)[span_13](end_span)
+                                <i class="fa-solid fa-cubes text-sm"></i> Raw Ingestion & Snapshots
                             </div>
                             <ul class="space-y-1.5 theme-text-muted text-slate-300 text-[11px]">
-                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-bolt text-amber-400 mt-0.5"></i> Automated API/CDC pipelines[span_14](start_span)[span_14](end_span)</li>
-                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-clock-rotate-left text-amber-400 mt-0.5"></i> Historical backload into Delta Lake[span_15](start_span)[span_15](end_span)</li>
-                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-camera text-amber-400 mt-0.5"></i> Daily point-in-time snapshot capture[span_16](start_span)[span_16](end_span)</li>
+                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-bolt text-amber-400 mt-0.5"></i> Automated API/CDC pipelines</li>
+                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-clock-rotate-left text-amber-400 mt-0.5"></i> Historical backload into Delta Lake</li>
+                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-camera text-amber-400 mt-0.5"></i> Daily point-in-time snapshot capture</li>
                             </ul>
                         </div>
                         <div class="p-2 rounded bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-300">
-                            <strong>Mandatory:</strong> Snapshots captured daily starting Day 1[span_17](start_span)[span_17](end_span).
+                            <strong>Mandatory:</strong> Snapshots captured daily starting Day 1.
                         </div>
                     </div>
                 </div>
@@ -179,23 +179,23 @@
                 <!-- Stage 3: Silver & Gold Core -->
                 <div class="space-y-3">
                     <div class="font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-                        <span>3. Silver & Gold Core[span_18](start_span)[span_18](end_span)</span>
+                        <span>3. Silver & Gold Core</span>
                         <i class="fa-solid fa-arrow-right text-db-orange hidden lg:inline"></i>
                     </div>
 
                     <div class="p-4 rounded-lg theme-subcard bg-db-dark border border-db-orange/40 space-y-3 h-[calc(100%-1.75rem)] flex flex-col justify-between">
                         <div class="space-y-2">
                             <div class="font-semibold text-db-orange flex items-center gap-1.5">
-                                <i class="fa-solid fa-gem text-sm"></i> Conformed Models & DQ[span_19](start_span)[span_19](end_span)
+                                <i class="fa-solid fa-gem text-sm"></i> Conformed Models & DQ
                             </div>
                             <ul class="space-y-1.5 theme-text-muted text-slate-300 text-[11px]">
-                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-link text-db-orange mt-0.5"></i> Cross-system entity resolution[span_20](start_span)[span_20](end_span)</li>
-                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-filter-circle-xmark text-db-orange mt-0.5"></i> Automated DQ profiling & exceptions[span_21](start_span)[span_21](end_span)</li>
-                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-coins text-db-orange mt-0.5"></i> Certified Gold Finance Data Products[span_22](start_span)[span_22](end_span)</li>
+                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-link text-db-orange mt-0.5"></i> Cross-system entity resolution</li>
+                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-filter-circle-xmark text-db-orange mt-0.5"></i> Automated DQ profiling & exceptions</li>
+                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-coins text-db-orange mt-0.5"></i> Certified Gold Finance Data Products</li>
                             </ul>
                         </div>
                         <div class="p-2 rounded bg-db-orange/10 border border-db-orange/20 text-[10px] text-db-orange">
-                            <strong>Governance:</strong> Row & column RBAC in Unity Catalog[span_23](start_span)[span_23](end_span).
+                            <strong>Governance:</strong> Row & column RBAC in Unity Catalog.
                         </div>
                     </div>
                 </div>
@@ -203,22 +203,22 @@
                 <!-- Stage 4: Consumption -->
                 <div class="space-y-3">
                     <div class="font-bold text-slate-400 uppercase tracking-wider">
-                        <span>4. Business Serving[span_24](start_span)[span_24](end_span)</span>
+                        <span>4. Business Serving</span>
                     </div>
 
                     <div class="p-4 rounded-lg theme-subcard bg-db-dark border border-purple-500/40 space-y-3 h-[calc(100%-1.75rem)] flex flex-col justify-between">
                         <div class="space-y-2">
                             <div class="font-semibold text-purple-400 flex items-center gap-1.5">
-                                <i class="fa-solid fa-chart-pie text-sm"></i> Operating View & Genie[span_25](start_span)[span_25](end_span)
+                                <i class="fa-solid fa-chart-pie text-sm"></i> Operating View & Genie
                             </div>
                             <ul class="space-y-1.5 theme-text-muted text-slate-300 text-[11px]">
-                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-desktop text-purple-400 mt-0.5"></i> Daily Finance Operating View[span_26](start_span)[span_26](end_span)</li>
-                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-users-gear text-purple-400 mt-0.5"></i> Executive, Controller, AR/AP Views[span_27](start_span)[span_27](end_span)</li>
-                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-comments text-purple-400 mt-0.5"></i> Genie AI Natural Language Space[span_28](start_span)[span_28](end_span)</li>
+                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-desktop text-purple-400 mt-0.5"></i> Daily Finance Operating View</li>
+                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-users-gear text-purple-400 mt-0.5"></i> Executive, Controller, AR/AP Views</li>
+                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-comments text-purple-400 mt-0.5"></i> Genie AI Natural Language Space</li>
                             </ul>
                         </div>
                         <div class="p-2 rounded bg-purple-500/10 border border-purple-500/20 text-[10px] text-purple-300">
-                            <strong>Freshness SLA:</strong> Ready before start of business[span_29](start_span)[span_29](end_span).
+                            <strong>Freshness SLA:</strong> Ready before start of business.
                         </div>
                     </div>
                 </div>
@@ -289,7 +289,7 @@
                             <span class="flex items-center justify-center w-8 h-8 rounded-full bg-db-orange/20 text-db-orange font-bold text-sm border border-db-orange/40">1</span>
                             <div>
                                 <h3 class="text-lg font-bold theme-text-bright text-white">Mobilization, Assessment & KPI Definition</h3>
-                                <p class="text-xs theme-text-muted text-slate-400">Weeks 1 – 2 · Workstream 1[span_30](start_span)[span_30](end_span)</p>
+                                <p class="text-xs theme-text-muted text-slate-400">Weeks 1 – 2 · Workstream 1</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
@@ -301,19 +301,19 @@
                     </div>
                     
                     <div id="p1-body" class="mt-4 space-y-4">
-                        <p class="text-sm theme-text-muted text-slate-300">Assess source system APIs (SQL Server, Business Central, HubSpot), profile data, and finalize SLA thresholds[span_31](start_span)[span_31](end_span).</p>
+                        <p class="text-sm theme-text-muted text-slate-300">Assess source system APIs (SQL Server, Business Central, HubSpot), profile data, and finalize SLA thresholds.</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                             <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-db-orange font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1"></i> Deliverables[span_32](start_span)[span_32](end_span)</span>
+                                <span class="text-db-orange font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1"></i> Deliverables</span>
                                 <ul class="list-disc list-inside space-y-1">
-                                    <li>Source system API feasibility assessment[span_33](start_span)[span_33](end_span)</li>
-                                    <li>Signed-off KPI Definition Register[span_34](start_span)[span_34](end_span)</li>
-                                    <li>Freshness & SLA Definition Document[span_35](start_span)[span_35](end_span)</li>
+                                    <li>Source system API feasibility assessment</li>
+                                    <li>Signed-off KPI Definition Register</li>
+                                    <li>Freshness & SLA Definition Document</li>
                                 </ul>
                             </div>
                             <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-amber-400 font-semibold block mb-1.5"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Critical Dependencies[span_36](start_span)[span_36](end_span)</span>
-                                <p>Thresholds for "critical", "at risk", "past due", and "billable work" must be locked in before modelling begins[span_37](start_span)[span_37](end_span).</p>
+                                <span class="text-amber-400 font-semibold block mb-1.5"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Critical Dependencies</span>
+                                <p>Thresholds for "critical", "at risk", "past due", and "billable work" must be locked in before modelling begins.</p>
                             </div>
                         </div>
                     </div>
@@ -327,7 +327,7 @@
                             <span class="flex items-center justify-center w-8 h-8 rounded-full bg-db-orange/20 text-db-orange font-bold text-sm border border-db-orange/40">2</span>
                             <div>
                                 <h3 class="text-lg font-bold theme-text-bright text-white">Platform Foundation & Unity Catalog Setup</h3>
-                                <p class="text-xs theme-text-muted text-slate-400">Weeks 2 – 3 · Workstream 2[span_38](start_span)[span_38](end_span)</p>
+                                <p class="text-xs theme-text-muted text-slate-400">Weeks 2 – 3 · Workstream 2</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
@@ -339,19 +339,19 @@
                     </div>
                     
                     <div id="p2-body" class="mt-4 space-y-4">
-                        <p class="text-sm theme-text-muted text-slate-300">Set up Dev/Test/Prod environments, Unity Catalog governance, and automated CI/CD deployment pipelines[span_39](start_span)[span_39](end_span).</p>
+                        <p class="text-sm theme-text-muted text-slate-300">Set up Dev/Test/Prod environments, Unity Catalog governance, and automated CI/CD deployment pipelines.</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                             <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-db-orange font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1"></i> Deliverables[span_40](start_span)[span_40](end_span)</span>
+                                <span class="text-db-orange font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1"></i> Deliverables</span>
                                 <ul class="list-disc list-inside space-y-1">
-                                    <li>Dev, Test & Prod environments[span_41](start_span)[span_41](end_span)</li>
-                                    <li>Unity Catalog role-based security model[span_42](start_span)[span_42](end_span)</li>
-                                    <li>Git CI/CD pipeline automation[span_43](start_span)[span_43](end_span)</li>
+                                    <li>Dev, Test & Prod environments</li>
+                                    <li>Unity Catalog role-based security model</li>
+                                    <li>Git CI/CD pipeline automation</li>
                                 </ul>
                             </div>
                             <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-blue-400 font-semibold block mb-1.5"><i class="fa-solid fa-lock mr-1"></i> Security Guardrails[span_44](start_span)[span_44](end_span)</span>
-                                <p>All operations execute within client boundaries — zero external data egress[span_45](start_span)[span_45](end_span).</p>
+                                <span class="text-blue-400 font-semibold block mb-1.5"><i class="fa-solid fa-lock mr-1"></i> Security Guardrails</span>
+                                <p>All operations execute within client boundaries — zero external data egress.</p>
                             </div>
                         </div>
                     </div>
@@ -365,7 +365,7 @@
                             <span class="flex items-center justify-center w-8 h-8 rounded-full bg-db-orange/20 text-db-orange font-bold text-sm border border-db-orange/40">3</span>
                             <div>
                                 <h3 class="text-lg font-bold theme-text-bright text-white">Automated Ingestion & Daily Snapshot Layer</h3>
-                                <p class="text-xs theme-text-muted text-slate-400">Weeks 3 – 5 · Workstream 3[span_46](start_span)[span_46](end_span)</p>
+                                <p class="text-xs theme-text-muted text-slate-400">Weeks 3 – 5 · Workstream 3</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
@@ -377,19 +377,19 @@
                     </div>
                     
                     <div id="p3-body" class="mt-4 space-y-4">
-                        <p class="text-sm theme-text-muted text-slate-300">Build automated connectors for API/CDC, backload historical Bronze records, and initiate daily point-in-time snapshots[span_47](start_span)[span_47](end_span).</p>
+                        <p class="text-sm theme-text-muted text-slate-300">Build automated connectors for API/CDC, backload historical Bronze records, and initiate daily point-in-time snapshots.</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                             <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-db-orange font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1"></i> Deliverables[span_48](start_span)[span_48](end_span)</span>
+                                <span class="text-db-orange font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1"></i> Deliverables</span>
                                 <ul class="list-disc list-inside space-y-1">
-                                    <li>Production ingestion pipelines[span_49](start_span)[span_49](end_span)</li>
-                                    <li>Bronze historical backload[span_50](start_span)[span_50](end_span)</li>
-                                    <li>Point-in-time historization snapshot layer[span_51](start_span)[span_51](end_span)</li>
+                                    <li>Production ingestion pipelines</li>
+                                    <li>Bronze historical backload</li>
+                                    <li>Point-in-time historization snapshot layer</li>
                                 </ul>
                             </div>
                             <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-rose-400 font-semibold block mb-1.5"><i class="fa-solid fa-clock mr-1"></i> Snapshot Constraint[span_52](start_span)[span_52](end_span)</span>
-                                <p>Snapshots cannot be backfilled[span_53](start_span)[span_53](end_span)! Daily capture must run from Day 1 to track AR aging & forecast accuracy[span_54](start_span)[span_54](end_span).</p>
+                                <span class="text-rose-400 font-semibold block mb-1.5"><i class="fa-solid fa-clock mr-1"></i> Snapshot Constraint</span>
+                                <p>Snapshots cannot be backfilled! Daily capture must run from Day 1 to track AR aging & forecast accuracy.</p>
                             </div>
                         </div>
                     </div>
@@ -403,7 +403,7 @@
                             <span class="flex items-center justify-center w-8 h-8 rounded-full bg-db-orange/20 text-db-orange font-bold text-sm border border-db-orange/40">4</span>
                             <div>
                                 <h3 class="text-lg font-bold theme-text-bright text-white">Conformed Data Modelling & DQ Framework</h3>
-                                <p class="text-xs theme-text-muted text-slate-400">Weeks 5 – 8 · Workstreams 4 & 5[span_55](start_span)[span_55](end_span)</p>
+                                <p class="text-xs theme-text-muted text-slate-400">Weeks 5 – 8 · Workstreams 4 & 5</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
@@ -415,19 +415,19 @@
                     </div>
                     
                     <div id="p4-body" class="mt-4 space-y-4">
-                        <p class="text-sm theme-text-muted text-slate-300">Build conformed Silver models, cross-system entity matching (Customer, Vendor, Job), Gold finance products, and automated DQ profiling[span_56](start_span)[span_56](end_span).</p>
+                        <p class="text-sm theme-text-muted text-slate-300">Build conformed Silver models, cross-system entity matching (Customer, Vendor, Job), Gold finance products, and automated DQ profiling.</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                             <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-db-orange font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1"></i> Deliverables[span_57](start_span)[span_57](end_span)</span>
+                                <span class="text-db-orange font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1"></i> Deliverables</span>
                                 <ul class="list-disc list-inside space-y-1">
-                                    <li>Conformed Silver & Gold Data Products[span_58](start_span)[span_58](end_span)</li>
-                                    <li>Cross-system entity matching engine[span_59](start_span)[span_59](end_span)</li>
-                                    <li>DQ Rule Library & Exception Register[span_60](start_span)[span_60](end_span)</li>
+                                    <li>Conformed Silver & Gold Data Products</li>
+                                    <li>Cross-system entity matching engine</li>
+                                    <li>DQ Rule Library & Exception Register</li>
                                 </ul>
                             </div>
                             <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-amber-400 font-semibold block mb-1.5"><i class="fa-solid fa-user-gear mr-1"></i> Remediation Loop[span_61](start_span)[span_61](end_span)</span>
-                                <p>Issues are flagged automatically, but client teams perform source corrections before dashboard validation[span_62](start_span)[span_62](end_span).</p>
+                                <span class="text-amber-400 font-semibold block mb-1.5"><i class="fa-solid fa-user-gear mr-1"></i> Remediation Loop</span>
+                                <p>Issues are flagged automatically, but client teams perform source corrections before dashboard validation.</p>
                             </div>
                         </div>
                     </div>
@@ -441,7 +441,7 @@
                             <span class="flex items-center justify-center w-8 h-8 rounded-full bg-db-orange/20 text-db-orange font-bold text-sm border border-db-orange/40">5</span>
                             <div>
                                 <h3 class="text-lg font-bold theme-text-bright text-white">Daily Finance Dashboard & Genie AI Query Space</h3>
-                                <p class="text-xs theme-text-muted text-slate-400">Weeks 8 – 10 · Workstreams 6 & 7[span_63](start_span)[span_63](end_span)</p>
+                                <p class="text-xs theme-text-muted text-slate-400">Weeks 8 – 10 · Workstreams 6 & 7</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
@@ -453,19 +453,19 @@
                     </div>
                     
                     <div id="p5-body" class="mt-4 space-y-4">
-                        <p class="text-sm theme-text-muted text-slate-300">Deliver 7-area daily finance dashboard in Databricks SQL, role-based persona views, and natural-language querying via Databricks Genie[span_64](start_span)[span_64](end_span).</p>
+                        <p class="text-sm theme-text-muted text-slate-300">Deliver 7-area daily finance dashboard in Databricks SQL, role-based persona views, and natural-language querying via Databricks Genie.</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                             <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-db-orange font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1"></i> Deliverables[span_65](start_span)[span_65](end_span)</span>
+                                <span class="text-db-orange font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1"></i> Deliverables</span>
                                 <ul class="list-disc list-inside space-y-1">
-                                    <li>Daily Finance Operating View Dashboard[span_66](start_span)[span_66](end_span)</li>
-                                    <li>3 Persona Views (Executive, Controller, AR/AP)[span_67](start_span)[span_67](end_span)</li>
-                                    <li>Curated Genie space & metric validation[span_68](start_span)[span_68](end_span)</li>
+                                    <li>Daily Finance Operating View Dashboard</li>
+                                    <li>3 Persona Views (Executive, Controller, AR/AP)</li>
+                                    <li>Curated Genie space & metric validation</li>
                                 </ul>
                             </div>
                             <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-purple-400 font-semibold block mb-1.5"><i class="fa-solid fa-bell mr-1"></i> Daily Freshness SLA[span_69](start_span)[span_69](end_span)</span>
-                                <p>Refreshed dashboards and automated exception alerts delivered before start of business each working day[span_70](start_span)[span_70](end_span).</p>
+                                <span class="text-purple-400 font-semibold block mb-1.5"><i class="fa-solid fa-bell mr-1"></i> Daily Freshness SLA</span>
+                                <p>Refreshed dashboards and automated exception alerts delivered before start of business each working day.</p>
                             </div>
                         </div>
                     </div>
@@ -479,7 +479,7 @@
                             <span class="flex items-center justify-center w-8 h-8 rounded-full bg-db-orange/20 text-db-orange font-bold text-sm border border-db-orange/40">6</span>
                             <div>
                                 <h3 class="text-lg font-bold theme-text-bright text-white">Validation, UAT, Production Handover & Hypercare</h3>
-                                <p class="text-xs theme-text-muted text-slate-400">Weeks 10 – 12 · Workstream 8[span_71](start_span)[span_71](end_span)</p>
+                                <p class="text-xs theme-text-muted text-slate-400">Weeks 10 – 12 · Workstream 8</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
@@ -491,19 +491,19 @@
                     </div>
                     
                     <div id="p6-body" class="mt-4 space-y-4">
-                        <p class="text-sm theme-text-muted text-slate-300">Reconcile data with legacy source systems, guide user acceptance testing, transition runbooks, and provide hypercare[span_72](start_span)[span_72](end_span).</p>
+                        <p class="text-sm theme-text-muted text-slate-300">Reconcile data with legacy source systems, guide user acceptance testing, transition runbooks, and provide hypercare.</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                             <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-db-orange font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1"></i> Deliverables[span_73](start_span)[span_73](end_span)</span>
+                                <span class="text-db-orange font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1"></i> Deliverables</span>
                                 <ul class="list-disc list-inside space-y-1">
-                                    <li>Reconciliation Pack vs Source Systems[span_74](start_span)[span_74](end_span)</li>
-                                    <li>Production Release & Technical Runbooks[span_75](start_span)[span_75](end_span)</li>
-                                    <li>Post Go-Live Hypercare Support[span_76](start_span)[span_76](end_span)</li>
+                                    <li>Reconciliation Pack vs Source Systems</li>
+                                    <li>Production Release & Technical Runbooks</li>
+                                    <li>Post Go-Live Hypercare Support</li>
                                 </ul>
                             </div>
                             <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-emerald-400 font-semibold block mb-1.5"><i class="fa-solid fa-circle-check mr-1"></i> Staged Value Release[span_77](start_span)[span_77](end_span)</span>
-                                <p>Working output released and validated in stages rather than a single week 12 drop[span_78](start_span)[span_78](end_span).</p>
+                                <span class="text-emerald-400 font-semibold block mb-1.5"><i class="fa-solid fa-circle-check mr-1"></i> Staged Value Release</span>
+                                <p>Working output released and validated in stages rather than a single week 12 drop.</p>
                             </div>
                         </div>
                     </div>
@@ -514,44 +514,44 @@
 
         <!-- Daily Finance Operating View Scope Matrix -->
         <section class="theme-card bg-db-card border border-db-border rounded-xl p-6 shadow-xl">
-            <h2 class="text-xl font-bold theme-text-bright text-white mb-2">Daily Finance Operating View Scope (7 Focus Areas)[span_79](start_span)[span_79](end_span)</h2>
-            <p class="text-xs theme-text-muted text-slate-400 mb-6">Functional coverage required before start of business each working day[span_80](start_span)[span_80](end_span).</p>
+            <h2 class="text-xl font-bold theme-text-bright text-white mb-2">Daily Finance Operating View Scope (7 Focus Areas)</h2>
+            <p class="text-xs theme-text-muted text-slate-400 mb-6">Functional coverage required before start of business each working day.</p>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
                 <div class="p-4 rounded-lg theme-subcard bg-db-dark border border-db-border">
                     <div class="flex items-center gap-2 mb-2 font-semibold text-db-orange">
-                        <i class="fa-solid fa-wallet"></i> 1. Cash Position & Liquidity[span_81](start_span)[span_81](end_span)
+                        <i class="fa-solid fa-wallet"></i> 1. Cash Position & Liquidity
                     </div>
-                    <p class="theme-text-muted text-slate-300">Current balance, 7-day forecast (AR/AP timing), inflows/outflows, funding risks[span_82](start_span)[span_82](end_span).</p>
+                    <p class="theme-text-muted text-slate-300">Current balance, 7-day forecast (AR/AP timing), inflows/outflows, funding risks.</p>
                 </div>
                 <div class="p-4 rounded-lg theme-subcard bg-db-dark border border-db-border">
                     <div class="flex items-center gap-2 mb-2 font-semibold text-db-orange">
-                        <i class="fa-solid fa-hand-holding-dollar"></i> 2. Receivables & Collections[span_83](start_span)[span_83](end_span)
+                        <i class="fa-solid fa-hand-holding-dollar"></i> 2. Receivables & Collections
                     </div>
-                    <p class="theme-text-muted text-slate-300">Cash collected yesterday, past-due accounts, commitments, billing disputes, daily priorities[span_84](start_span)[span_84](end_span).</p>
+                    <p class="theme-text-muted text-slate-300">Cash collected yesterday, past-due accounts, commitments, billing disputes, daily priorities.</p>
                 </div>
                 <div class="p-4 rounded-lg theme-subcard bg-db-dark border border-db-border">
                     <div class="flex items-center gap-2 mb-2 font-semibold text-db-orange">
-                        <i class="fa-solid fa-file-invoice-dollar"></i> 3. Accounts Payable[span_85](start_span)[span_85](end_span)
+                        <i class="fa-solid fa-file-invoice-dollar"></i> 3. Accounts Payable
                     </div>
-                    <p class="theme-text-muted text-slate-300">Critical vendor payments due, credit hold risk, approval bottlenecks, major disbursements[span_86](start_span)[span_86](end_span).</p>
+                    <p class="theme-text-muted text-slate-300">Critical vendor payments due, credit hold risk, approval bottlenecks, major disbursements.</p>
                 </div>
                 <div class="p-4 rounded-lg theme-subcard bg-db-dark border border-db-border">
                     <div class="flex items-center gap-2 mb-2 font-semibold text-db-orange">
-                        <i class="fa-solid fa-chart-line"></i> 4. Billing & Revenue Capture[span_87](start_span)[span_87](end_span)
+                        <i class="fa-solid fa-chart-line"></i> 4. Billing & Revenue Capture
                     </div>
-                    <p class="theme-text-muted text-slate-300">Invoices issued yesterday, unbilled work, open change orders, unbilled revenue at risk[span_88](start_span)[span_88](end_span).</p>
+                    <p class="theme-text-muted text-slate-300">Invoices issued yesterday, unbilled work, open change orders, unbilled revenue at risk.</p>
                 </div>
                 <div class="p-4 rounded-lg theme-subcard bg-db-dark border border-db-border">
                     <div class="flex items-center gap-2 mb-2 font-semibold text-db-orange">
-                        <i class="fa-solid fa-scale-balanced"></i> 5. Controls & Close[span_89](start_span)[span_89](end_span)
+                        <i class="fa-solid fa-scale-balanced"></i> 5. Controls & Close
                     </div>
-                    <p class="theme-text-muted text-slate-300">Approval delays, reconciliation exceptions, items needing action, month-end close progress[span_90](start_span)[span_90](end_span).</p>
+                    <p class="theme-text-muted text-slate-300">Approval delays, reconciliation exceptions, items needing action, month-end close progress.</p>
                 </div>
                 <div class="p-4 rounded-lg theme-subcard bg-db-dark border border-db-border">
                     <div class="flex items-center gap-2 mb-2 font-semibold text-db-orange">
-                        <i class="fa-solid fa-user-check"></i> 6. Payroll & Compliance[span_91](start_span)[span_91](end_span)
+                        <i class="fa-solid fa-user-check"></i> 6. Payroll & Compliance
                     </div>
-                    <p class="theme-text-muted text-slate-300">Payroll readiness, missing timesheets, expense reports, tax & compliance alerts[span_92](start_span)[span_92](end_span).</p>
+                    <p class="theme-text-muted text-slate-300">Payroll readiness, missing timesheets, expense reports, tax & compliance alerts.</p>
                 </div>
             </div>
         </section>
@@ -572,7 +572,7 @@
                 </div>
                 <div class="p-4 rounded-lg theme-subcard bg-db-dark/80 border border-db-border">
                     <h4 class="font-bold text-db-orange mb-1">2. Synthetic Snapshot Backfill Strategy</h4>
-                    <p class="theme-text-muted text-slate-300">Since daily snapshots cannot be backfilled from source systems[span_93](start_span)[span_93](end_span), create a synthetic backfill script using historical log tables during Week 2 to give executives 90-day trendlines immediately on Day 1.</p>
+                    <p class="theme-text-muted text-slate-300">Since daily snapshots cannot be backfilled from source systems, create a synthetic backfill script using historical log tables during Week 2 to give executives 90-day trendlines immediately on Day 1.</p>
                 </div>
                 <div class="p-4 rounded-lg theme-subcard bg-db-dark/80 border border-db-border">
                     <h4 class="font-bold text-db-orange mb-1">3. FinOps & Serverless Compute Governance</h4>
@@ -580,7 +580,7 @@
                 </div>
                 <div class="p-4 rounded-lg theme-subcard bg-db-dark/80 border border-db-border">
                     <h4 class="font-bold text-db-orange mb-1">4. Contractual SLA on Client Source Remediation</h4>
-                    <p class="theme-text-muted text-slate-300">Establish a strict 48-hour client SLA for fixing source-side data errors[span_94](start_span)[span_94](end_span). Add an automated fallback layer to quarantine bad records so remaining clean data can still populate morning dashboards.</p>
+                    <p class="theme-text-muted text-slate-300">Establish a strict 48-hour client SLA for fixing source-side data errors. Add an automated fallback layer to quarantine bad records so remaining clean data can still populate morning dashboards.</p>
                 </div>
             </div>
         </section>
