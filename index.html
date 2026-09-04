@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Infotech Services — Databricks Lakehouse Phase 1 Architecture</title>
+    <title>Invotech Services — Databricks Lakehouse Phase 1 Architecture</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -28,6 +28,157 @@
     <!-- FontAwesome & Devicons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
+    <style>
+        /* Light Theme Overrides */
+        html:not(.dark) body {
+            background-color: #F4F6F8;
+            color: #1F2937;
+        }
+        html:not(.dark) header {
+            background-color: #FFFFFF;
+            border-color: #E5E7EB;
+        }
+        html:not(.dark) .theme-card {
+            background-color: #FFFFFF;
+            border-color: #E5E7EB;
+            color: #1F2937;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        html:not(.dark) .theme-subcard {
+            background-color: #F9FAFB;
+            border-color: #E5E7EB;
+            color: #374151;
+        }
+        html:not(.dark) .theme-text-muted {
+            color: #6B7280;
+        }
+        html:not(.dark) .theme-text-bright {
+            color: #111827;
+        }
+    </style>
+</head>
+<body class="bg-db-navy text-slate-200 font-sans antialiased min-h-screen transition-colors duration-200">
+
+    <!-- Header Section -->
+    <header class="border-b border-db-border bg-db-dark/90 backdrop-blur sticky top-0 z-40 transition-colors duration-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <!-- Invotech Services Logo -->
+                <div class="bg-white/95 rounded-lg p-1.5 border border-slate-200/20 shadow-sm flex items-center justify-center">
+                    <img src="Logo 2 green blue.png" alt="Invotech Services Logo" class="h-7 md:h-9 object-contain">
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold theme-text-bright text-white tracking-tight">Invotech Services — Databricks Phase 1 Architecture</h1>
+                    <p class="text-xs theme-text-muted text-slate-400">Foundation & Finance Domain Productionization · Target Duration 10–12 Weeks</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+                <!-- Search Box -->
+                <div class="relative flex-1 md:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="roadmap-search" placeholder="Search architecture, SLAs, tools..." 
+                        class="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-db-card theme-subcard border border-db-border text-slate-200 focus:outline-none focus:border-db-orange transition">
+                </div>
+
+                <!-- Theme Toggle -->
+                <button id="toggle-theme" class="px-3 py-1.5 rounded-lg bg-db-card theme-subcard border border-db-border hover:border-db-orange text-xs font-medium flex items-center gap-2 transition">
+                    <i id="theme-icon" class="fa-solid fa-sun text-amber-400"></i>
+                    <span id="theme-text" class="hidden sm:inline">Light Mode</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Completion Tracker -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3 mt-2">
+            <div class="flex items-center justify-between text-xs mb-1 font-semibold">
+                <span class="theme-text-muted text-slate-400"><i class="fa-solid fa-list-check text-db-orange mr-1"></i> Phase 1 Milestone Progress</span>
+                <span id="progress-text" class="text-db-orange">0 of 6 Milestones Completed (0%)</span>
+            </div>
+            <div class="w-full bg-slate-700/40 rounded-full h-2 overflow-hidden border border-db-border">
+                <div id="progress-bar" class="bg-gradient-to-r from-db-orange to-emerald-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+        <!-- Visual Architecture Diagram Section -->
+        <section class="theme-card bg-db-card rounded-xl p-6 border border-db-border shadow-xl space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-db-border/60 pb-4">
+                <div>
+                    <h2 class="text-xl font-bold theme-text-bright text-white flex items-center gap-2">
+                        <i class="fa-solid fa-sitemap text-db-orange"></i> High-Level Lakehouse Target Architecture
+                    </h2>
+                    <p class="text-xs theme-text-muted text-slate-400">Interactive end-to-end data flow: Source Systems → Medallion Layer → Role-Based Analytics.</p>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                    <i class="fa-solid fa-shield-halved mr-1"></i> Unity Catalog Governed
+                </span>
+            </div>
+
+            <!-- Interactive Architecture Flow Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 text-xs">
+
+                <!-- Stage 1: Sources -->
+                <div class="space-y-3">
+                    <div class="font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                        <span>1. Source Systems</span>
+                        <i class="fa-solid fa-arrow-right text-db-orange hidden lg:inline"></i>
+                    </div>
+                    
+                    <div class="p-3.5 rounded-lg theme-subcard bg-db-dark border border-db-border space-y-2 hover:border-blue-400 transition cursor-pointer" onclick="openModal('sqlserver')">
+                        <div class="font-semibold text-blue-400 flex items-center justify-between">
+                            <span><i class="devicon-microsoftsqlserver-plain mr-1.5"></i> SQL Server</span>
+                            <span class="text-[10px] opacity-75">Internal Portal</span>
+                        </div>
+                        <p class="theme-text-muted text-slate-400 text-[11px]">Field assignments, job transactions, equipment history, operator logs.</p>
+                    </div>
+
+                    <div class="p-3.5 rounded-lg theme-subcard bg-db-dark border border-db-border space-y-2 hover:border-blue-500 transition cursor-pointer" onclick="openModal('bc')">
+                        <div class="font-semibold text-blue-500 flex items-center justify-between">
+                            <span><i class="fa-solid fa-building-columns mr-1.5"></i> Business Central</span>
+                            <span class="text-[10px] opacity-75">Dynamics 365 ERP</span>
+                        </div>
+                        <p class="theme-text-muted text-slate-400 text-[11px]">GL, AR/AP, invoices, costs, revenue, assets, rental tickets.</p>
+                    </div>
+
+                    <div class="p-3.5 rounded-lg theme-subcard bg-db-dark border border-db-borderThe code you provided is actually structurally complete—it contains the full document from `<!DOCTYPE html>` to the closing `</html>` tag—but it includes several raw text artifacts (like `[span_2](start_span)`) from a previous output generation that disrupted the text formatting. 
+
+I have cleaned up all the artifacts, ensured the JavaScript logic for the interactive elements is perfectly intact, and refined the team roster section to accurately reflect specific technical stacks for the engineering roles.
+
+```html
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infotech Services — Databricks Lakehouse Phase 1 Architecture</title>
+    <!-- Tailwind CSS -->
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        db: {
+                            orange: '#FF3621',
+                            dark: '#1B252C',
+                            navy: '#0B131B',
+                            card: '#151E28',
+                            border: '#2C3B47',
+                            accent: '#00A8E8'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome & Devicons -->
+    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)">
+    <link rel="stylesheet" href="[https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css](https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css)">
     <style>
         /* Light Theme Overrides */
         html:not(.dark) body {
@@ -315,7 +466,7 @@
                     <h4 class="font-bold text-slate-200 text-base">Ashish Golccha</h4>
                     <p class="text-xs text-db-orange font-medium mb-3 uppercase tracking-wider">Solution Architect</p>
                     <p class="text-xs theme-text-muted text-slate-400 leading-relaxed mt-auto">
-                        <strong>9+ years of experience.</strong> Currently a Senior Specialist at MSD[span_2](start_span)[span_2](end_span). Expert in architecting scalable data solutions across analytics domains[span_3](start_span)[span_3](end_span). Brings deep, proven expertise in AWS (Glue, Redshift, S3), PySpark, Databricks, and establishing end-to-end, cost-optimized enterprise pipelines[span_4](start_span)[span_4](end_span).
+                        <strong>9+ years of experience.</strong> Currently a Senior Specialist at MSD. Expert in architecting scalable data solutions across analytics domains. Brings deep, proven expertise in AWS (Glue, Redshift, S3), PySpark, Databricks, and establishing end-to-end, cost-optimized enterprise pipelines.
                     </p>
                 </div>
 
@@ -327,7 +478,7 @@
                     <h4 class="font-bold text-slate-200 text-base">Tejas Anand</h4>
                     <p class="text-xs text-emerald-400 font-medium mb-3 uppercase tracking-wider">Senior Data/AI Engineer</p>
                     <p class="text-xs theme-text-muted text-slate-400 leading-relaxed mt-auto">
-                        <strong>5.5+ years of experience.</strong> Specializes in designing robust cloud-native infrastructure on AWS and Databricks[span_5](start_span)[span_5](end_span). Deep expertise in Databricks Unity Catalog governance, Medallion Architecture, dbt modeling, and bridging enterprise pipelines with modern AI/LLM semantic layers (NL2SQL) for accelerated insights[span_6](start_span)[span_6](end_span).
+                        <strong>5.5+ years of experience.</strong> Specializes in designing robust cloud-native data pipelines on AWS (Glue, Lambda, Athena) and Databricks. Deep expertise in PySpark, Unity Catalog governance, orchestrating CI/CD with Databricks Asset Bundles, and integrating OpenAI APIs to bridge Medallion Architectures with modern AI semantic layers for accelerated insights.
                     </p>
                 </div>
             </div>
