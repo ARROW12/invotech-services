@@ -1,908 +1,1063 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invotech Services — Databricks Lakehouse Phase 1 Architecture</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        db: {
-                            orange: '#FF3621',
-                            dark: '#1B252C',
-                            navy: '#0B131B',
-                            card: '#151E28',
-                            border: '#2C3B47',
-                            accent: '#00A8E8'
-                        }
-                    },
-                    animation: {
-                        'float': 'float 3s ease-in-out infinite',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-5px)' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- FontAwesome & Devicons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
-    
-    <!-- AOS Animation Library -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Invotech Services — Databricks Lakehouse Phase 1 architectural blueprint: milestones, architecture, and execution team.">
+<title>Invotech Services — Databricks Lakehouse Phase 1 Architecture</title>
 
-    <!-- Mermaid.js -->
-    <script type="module">
-        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-        mermaid.initialize({ 
-            startOnLoad: true, 
-            theme: 'base',
-            themeVariables: {
-                background: 'transparent',
-                primaryColor: '#1B252C',
-                primaryTextColor: '#F1F5F9',
-                primaryBorderColor: '#2C3B47',
-                lineColor: '#64748B',
-                secondaryColor: '#FF3621',
-                tertiaryColor: '#151E28',
-                fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
-            },
-            securityLevel: 'loose'
-        });
-    </script>
+<!-- Preconnects for the CDN resources this page depends on -->
+<link rel="preconnect" href="https://cdn.tailwindcss.com">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 
-    <style>
-        /* Light Theme Overrides */
-        html:not(.dark) body {
-            background-color: #F4F6F8;
-            color: #1F2937;
-        }
-        html:not(.dark) header {
-            background-color: #FFFFFF;
-            border-color: #E5E7EB;
-        }
-        html:not(.dark) .theme-card {
-            background-color: #FFFFFF;
-            border-color: #E5E7EB;
-            color: #1F2937;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-        html:not(.dark) .theme-subcard {
-            background-color: #F9FAFB;
-            border-color: #E5E7EB;
-            color: #374151;
-        }
-        html:not(.dark) .theme-text-muted {
-            color: #6B7280;
-        }
-        html:not(.dark) .theme-text-bright {
-            color: #111827;
-        }
-        
-        /* Enlarge Mermaid Diagram */
-        .mermaid {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-        }
-        .mermaid svg {
-            width: 100% !important;
-            max-width: 1400px !important;
-            min-height: 400px;
-            height: auto !important;
-        }
-    </style>
+<!-- Tailwind CSS (utility classes only — all theme colors are driven by the CSS custom properties below) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  // Tailwind color tokens read live CSS variables so a single variable
+  // flip (see the .dark rules further down) re-themes the entire page —
+  // no separate "light mode override" class is needed per component.
+  function themeColor(variable) {
+    return ({ opacityValue }) =>
+      opacityValue === undefined
+        ? `rgb(var(${variable}))`
+        : `rgb(var(${variable}) / ${opacityValue})`;
+  }
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          brand: '#FF3621',
+          accent: '#00A8E8',
+          bg: themeColor('--color-bg'),
+          surface: themeColor('--color-surface'),
+          surface2: themeColor('--color-surface-2'),
+          headerbg: themeColor('--color-header'),
+          edge: themeColor('--color-border'),
+          ink: themeColor('--color-text'),
+          inkmuted: themeColor('--color-text-muted'),
+          inkbright: themeColor('--color-text-bright'),
+        },
+        animation: {
+          float: 'float 3s ease-in-out infinite',
+        },
+        keyframes: {
+          float: {
+            '0%, 100%': { transform: 'translateY(0)' },
+            '50%': { transform: 'translateY(-5px)' },
+          },
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Icon fonts -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
+
+<!-- Scroll-reveal animation library -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+<style>
+  /* ---------- Theme tokens ---------- */
+  /* Values are "R G B" triples so Tailwind's rgb(var(...) / <alpha>) works. */
+  :root,
+  html.dark {
+    --color-bg: 11 19 27;        /* page background */
+    --color-surface: 21 30 40;   /* section / card background */
+    --color-surface-2: 27 37 44; /* nested sub-card background */
+    --color-header: 27 37 44;    /* header background */
+    --color-border: 44 59 71;
+    --color-text: 226 232 240;
+    --color-text-muted: 148 163 184;
+    --color-text-bright: 255 255 255;
+  }
+  html:not(.dark) {
+    --color-bg: 244 246 248;
+    --color-surface: 255 255 255;
+    --color-surface-2: 249 250 251;
+    --color-header: 255 255 255;
+    --color-border: 229 231 235;
+    --color-text: 31 41 55;
+    --color-text-muted: 107 114 128;
+    --color-text-bright: 17 24 39;
+  }
+
+  html:not(.dark) .theme-shadow { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); }
+
+  /* ---------- Mermaid sizing ---------- */
+  .mermaid { width: 100%; display: flex; justify-content: center; }
+  .mermaid svg {
+    width: 100% !important;
+    max-width: 1400px !important;
+    min-height: 400px;
+    height: auto !important;
+  }
+
+  /* ---------- Focus visibility (keyboard users) ---------- */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid rgb(var(--color-bg,0 0 0));
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgb(0 168 232 / 0.9);
+  }
+
+  /* ---------- Respect reduced-motion preferences ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+    [data-aos] { transform: none !important; }
+  }
+
+  /* Guarantees content is visible even before AOS attaches (and permanently
+     visible if the AOS script fails to load from its CDN — see the
+     "reveal fallback" script at the bottom of the page). */
+  [data-aos] { opacity: 1; }
+</style>
+
+<!-- Mermaid.js (diagram rendering). Any failure here is caught so it can
+     never break the rest of the page. -->
+<script type="module">
+  try {
+    const { default: mermaid } = await import('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs');
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      themeVariables: {
+        background: 'transparent',
+        primaryColor: '#1B252C',
+        primaryTextColor: '#F1F5F9',
+        primaryBorderColor: '#2C3B47',
+        lineColor: '#64748B',
+        secondaryColor: '#FF3621',
+        tertiaryColor: '#151E28',
+        fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+      },
+      securityLevel: 'loose',
+    });
+  } catch (err) {
+    console.error('Mermaid failed to load — the architecture diagram will show as plain text.', err);
+  }
+</script>
 </head>
-<body class="bg-db-navy text-slate-200 font-sans antialiased min-h-screen transition-colors duration-200 overflow-x-hidden">
+<body class="bg-bg text-ink font-sans antialiased min-h-screen transition-colors duration-200 overflow-x-hidden">
 
-    <!-- Header Section -->
-    <header class="border-b border-db-border bg-db-dark/90 backdrop-blur sticky top-0 z-40 transition-colors duration-200 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-4">
-                <!-- Invotech Services Logo -->
-                <div class="bg-white/95 rounded-lg p-1.5 border border-slate-200/20 shadow-sm flex items-center justify-center hover:scale-105 transition-transform">
-                    <img src="Logo 2 green blue.png" alt="Invotech Services Logo" class="h-7 md:h-9 object-contain" onerror="this.src='https://via.placeholder.com/150x50?text=Logo'">
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold theme-text-bright text-white tracking-tight">Invotech Services — Databricks Phase 1 Architecture</h1>
-                    <p class="text-xs theme-text-muted text-slate-400">Foundation & Finance Domain Productionization · Target Duration 10–12 Weeks</p>
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
-                <!-- Theme Toggle -->
-                <button id="toggle-theme" class="px-3 py-1.5 rounded-lg bg-db-card theme-subcard border border-db-border hover:border-db-orange text-xs font-medium flex items-center gap-2 transition hover:scale-105">
-                    <i id="theme-icon" class="fa-solid fa-sun text-amber-400"></i>
-                    <span id="theme-text" class="hidden sm:inline">Light Mode</span>
-                </button>
-            </div>
+  <!-- Header -->
+  <header class="border-b border-edge bg-headerbg/90 backdrop-blur sticky top-0 z-40 transition-colors duration-200 theme-shadow">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-4">
+        <div class="bg-white/95 rounded-lg p-1.5 border border-slate-200/20 shadow-sm flex items-center justify-center hover:scale-105 transition-transform">
+          <img src="Logo 2 green blue.png" alt="Invotech Services logo" class="h-7 md:h-9 object-contain"
+               onerror="this.onerror=null;this.src='https://via.placeholder.com/150x50?text=Logo';">
         </div>
-
-        <!-- Completion Tracker -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3 mt-2">
-            <div class="flex items-center justify-between text-xs mb-1 font-semibold">
-                <span class="theme-text-muted text-slate-400"><i class="fa-solid fa-list-check text-db-orange mr-1"></i> Phase 1 Milestone Progress</span>
-                <span id="progress-text" class="text-db-orange">0 of 6 Milestones Completed (0%)</span>
-            </div>
-            <div class="w-full bg-slate-700/40 rounded-full h-2 overflow-hidden border border-db-border">
-                <div id="progress-bar" class="bg-gradient-to-r from-db-orange to-emerald-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
-            </div>
+        <div>
+          <h1 class="text-xl font-bold text-inkbright tracking-tight">Invotech Services — Databricks Phase 1 Architecture</h1>
+          <p class="text-xs text-inkmuted">Foundation &amp; Finance Domain Productionization · Target Duration 10–12 Weeks</p>
         </div>
-    </header>
+      </div>
 
-    <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
-
-        <!-- Overview Section (New) -->
-        <section data-aos="fade-up" class="theme-card bg-db-card border border-db-border rounded-xl p-6 shadow-xl relative overflow-hidden group">
-            <div class="absolute top-0 right-0 w-64 h-64 bg-db-orange/5 rounded-full blur-3xl group-hover:bg-db-orange/10 transition-colors duration-700"></div>
-            <div class="relative z-10 flex flex-col md:flex-row gap-6 items-center">
-                <div class="p-4 bg-db-dark/80 rounded-full border border-db-border/50 animate-float hidden sm:flex">
-                    <i class="fa-solid fa-globe text-3xl text-db-orange"></i>
-                </div>
-                <div>
-                    <h2 class="text-2xl font-bold theme-text-bright text-white mb-2">Project & Company Overview</h2>
-                    <p class="text-sm theme-text-muted text-slate-300 leading-relaxed">
-                        Welcome to the Phase 1 architectural blueprint for the enterprise Databricks Lakehouse implementation. Delivered by <strong>Invotech Services</strong> in strategic partnership with <a href="https://s3s.com/" target="_blank" class="text-db-accent underline hover:text-blue-400 transition-colors">S3S</a>, this initiative is focused on transforming distributed, raw organizational data into governed, actionable finance data products. By leveraging cutting-edge cloud infrastructure, advanced AI engineering, and semantic layers, we aim to eliminate legacy data silos and empower your teams with high-performance, real-time analytics.
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- POV Reusability Section (Moved) -->
-        <section data-aos="fade-up" data-aos-delay="100" class="theme-card bg-gradient-to-r from-db-card via-slate-800/40 to-db-card border border-emerald-500/30 rounded-xl p-6 shadow-xl relative overflow-hidden">
-            <div class="absolute top-0 right-0 p-16 bg-emerald-500/5 rounded-full blur-3xl"></div>
-            <div class="relative z-10 flex items-start gap-4">
-                <div class="p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/30 hidden sm:block animate-float">
-                    <i class="fa-solid fa-flask-vial text-2xl text-emerald-400"></i>
-                </div>
-                <div>
-                    <h2 class="text-xl font-bold theme-text-bright text-white mb-2">Proof of Value (POV) Validation & Pipeline Reusability</h2>
-                    <p class="text-sm theme-text-muted text-slate-300 leading-relaxed">
-                        Prior to this phase, a Proof of Value (POV) to validate core architectural assumptions was executed. 
-                        <strong class="text-emerald-400 font-semibold">We need to analyse and understand the foundational data pipelines engineered during the POV if they are fully reusable.</strong> Because the initial ingestion and transformation logic was built adhering to production-grade Databricks Medallion standards (PySpark & Delta Lake), we will directly port and scale these assets. This strategic advantage eliminates redundant development, accelerates our time-to-market for Phase 1, and significantly de-risks the delivery timeline.
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Visual Architecture Diagram Section (Enlarged) -->
-        <section data-aos="fade-up" data-aos-delay="200" class="theme-card bg-db-card rounded-xl p-6 border border-db-border shadow-xl space-y-6">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-db-border/60 pb-4">
-                <div>
-                    <h2 class="text-xl font-bold theme-text-bright text-white flex items-center gap-2">
-                        <i class="fa-solid fa-sitemap text-db-orange"></i> High-Level Lakehouse Target Architecture
-                    </h2>
-                    <p class="text-xs theme-text-muted text-slate-400">Interactive end-to-end data flow: Source Systems → Medallion Layer → Role-Based Analytics.</p>
-                </div>
-                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 animate-pulse">
-                    <i class="fa-solid fa-shield-halved mr-1"></i> Unity Catalog Governed
-                </span>
-            </div>
-
-            <!-- ENLARGED MERMAID DIAGRAM INSERTION -->
-            <div class="flex justify-center w-full overflow-hidden bg-db-navy/50 p-4 sm:p-8 rounded-xl border border-db-border/50 hover:border-db-border transition-colors">
-                <pre class="mermaid w-full">
-                flowchart LR
-                    classDef source fill:#151E28,stroke:#3B82F6,stroke-width:1px,color:#E2E8F0;
-                    classDef dbx fill:#1B252C,stroke:#FF3621,stroke-width:2px,color:#fff;
-                    classDef gov fill:#1B252C,stroke:#10B981,stroke-width:1px,color:#E2E8F0;
-                    classDef ai fill:#1B252C,stroke:#A855F7,stroke-width:1px,color:#E2E8F0;
-
-                    subgraph Sources["1. Source Systems"]
-                        direction TB
-                        SQL["SQL Server<br/>(Internal)"]:::source
-                        BC["Business Central<br/>(ERP)"]:::source
-                        HubSpot["HubSpot<br/>(CRM)"]:::source
-                    end
-
-                    subgraph Medallion["2. Databricks Medallion Layer"]
-                        direction LR
-                        Bronze["Bronze<br/>(Raw API & Snapshots)"]:::dbx
-                        Silver["Silver<br/>(Conformed & Matched)"]:::dbx
-                        Gold["Gold<br/>(Finance Data Products)"]:::dbx
-                    end
-
-                    subgraph Governance["3. Governance & Security"]
-                        UC["Unity Catalog<br/>(Row/Column RBAC)"]:::gov
-                    end
-
-                    subgraph Consumption["4. Business Serving"]
-                        direction TB
-                        Dash["Finance Operating View<br/>(Dashboards)"]:::ai
-                        Genie["Genie AI<br/>(Natural Language)"]:::ai
-                    end
-
-                    SQL --> Bronze
-                    BC --> Bronze
-                    HubSpot --> Bronze
-
-                    Bronze --> Silver
-                    Silver --> Gold
-
-                    UC -.- Bronze
-                    UC -.- Silver
-                    UC -.- Gold
-
-                    Gold --> Dash
-                    Gold --> Genie
-                </pre>
-            </div>
-            <!-- END MERMAID DIAGRAM -->
-
-            <!-- Interactive Architecture Flow Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 text-xs">
-
-                <!-- Stage 1: Sources -->
-                <div class="space-y-3" data-aos="fade-up" data-aos-delay="300">
-                    <div class="font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-                        <span>1. Source Systems</span>
-                        <i class="fa-solid fa-arrow-right text-db-orange hidden lg:inline animate-pulse"></i>
-                    </div>
-                    
-                    <div class="p-3.5 rounded-lg theme-subcard bg-db-dark border border-db-border space-y-2 hover:border-blue-400 hover:-translate-y-1 transition-all cursor-pointer shadow-sm hover:shadow-blue-500/20" onclick="openModal('sqlserver')">
-                        <div class="font-semibold text-blue-400 flex items-center justify-between">
-                            <span><i class="devicon-microsoftsqlserver-plain mr-1.5"></i> SQL Server</span>
-                            <span class="text-[10px] opacity-75">Internal Portal</span>
-                        </div>
-                        <p class="theme-text-muted text-slate-400 text-[11px]">Field assignments, job transactions, equipment history, operator logs.</p>
-                    </div>
-
-                    <div class="p-3.5 rounded-lg theme-subcard bg-db-dark border border-db-border space-y-2 hover:border-blue-500 hover:-translate-y-1 transition-all cursor-pointer shadow-sm hover:shadow-blue-500/20" onclick="openModal('bc')">
-                        <div class="font-semibold text-blue-500 flex items-center justify-between">
-                            <span><i class="fa-solid fa-building-columns mr-1.5"></i> Business Central</span>
-                            <span class="text-[10px] opacity-75">Dynamics 365 ERP</span>
-                        </div>
-                        <p class="theme-text-muted text-slate-400 text-[11px]">GL, AR/AP, invoices, costs, revenue, assets, rental tickets.</p>
-                    </div>
-
-                    <div class="p-3.5 rounded-lg theme-subcard bg-db-dark border border-db-border space-y-2 hover:border-orange-500 hover:-translate-y-1 transition-all cursor-pointer shadow-sm hover:shadow-orange-500/20" onclick="openModal('hubspot')">
-                        <div class="font-semibold text-orange-500 flex items-center justify-between">
-                            <span><i class="fa-brands fa-hubspot mr-1.5"></i> HubSpot CRM</span>
-                            <span class="text-[10px] opacity-75">Sales Platform</span>
-                        </div>
-                        <p class="theme-text-muted text-slate-400 text-[11px]">Companies, contacts, deals, pipeline stages, owners.</p>
-                    </div>
-                </div>
-
-                <!-- Stage 2: Bronze Ingestion -->
-                <div class="space-y-3" data-aos="fade-up" data-aos-delay="400">
-                    <div class="font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-                        <span>2. Bronze Layer</span>
-                        <i class="fa-solid fa-arrow-right text-db-orange hidden lg:inline animate-pulse"></i>
-                    </div>
-                    
-                    <div class="p-4 rounded-lg theme-subcard bg-db-dark border border-amber-600/40 space-y-3 h-[calc(100%-1.75rem)] flex flex-col justify-between hover:border-amber-500 hover:-translate-y-1 transition-all shadow-sm hover:shadow-amber-500/20">
-                        <div class="space-y-2">
-                            <div class="font-semibold text-amber-500 flex items-center gap-1.5">
-                                <i class="fa-solid fa-cubes text-sm"></i> Raw Ingestion & Snapshots
-                            </div>
-                            <ul class="space-y-1.5 theme-text-muted text-slate-300 text-[11px]">
-                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-bolt text-amber-400 mt-0.5"></i> Automated API/CDC pipelines</li>
-                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-clock-rotate-left text-amber-400 mt-0.5"></i> Historical backload into Delta Lake</li>
-                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-camera text-amber-400 mt-0.5"></i> Daily point-in-time snapshot capture</li>
-                            </ul>
-                        </div>
-                        <div class="p-2 rounded bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-300">
-                            <strong>Mandatory:</strong> Snapshots captured daily starting Day 1.
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Stage 3: Silver & Gold Core -->
-                <div class="space-y-3" data-aos="fade-up" data-aos-delay="500">
-                    <div class="font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-                        <span>3. Silver & Gold Core</span>
-                        <i class="fa-solid fa-arrow-right text-db-orange hidden lg:inline animate-pulse"></i>
-                    </div>
-
-                    <div class="p-4 rounded-lg theme-subcard bg-db-dark border border-db-orange/40 space-y-3 h-[calc(100%-1.75rem)] flex flex-col justify-between hover:border-db-orange hover:-translate-y-1 transition-all shadow-sm hover:shadow-db-orange/20">
-                        <div class="space-y-2">
-                            <div class="font-semibold text-db-orange flex items-center gap-1.5">
-                                <i class="fa-solid fa-gem text-sm"></i> Conformed Models & DQ
-                            </div>
-                            <ul class="space-y-1.5 theme-text-muted text-slate-300 text-[11px]">
-                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-link text-db-orange mt-0.5"></i> Cross-system entity resolution</li>
-                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-filter-circle-xmark text-db-orange mt-0.5"></i> Automated DQ profiling & exceptions</li>
-                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-coins text-db-orange mt-0.5"></i> Certified Gold Finance Data Products</li>
-                            </ul>
-                        </div>
-                        <div class="p-2 rounded bg-db-orange/10 border border-db-orange/20 text-[10px] text-db-orange">
-                            <strong>Governance:</strong> Row & column RBAC in Unity Catalog.
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Stage 4: Consumption -->
-                <div class="space-y-3" data-aos="fade-up" data-aos-delay="600">
-                    <div class="font-bold text-slate-400 uppercase tracking-wider">
-                        <span>4. Business Serving</span>
-                    </div>
-
-                    <div class="p-4 rounded-lg theme-subcard bg-db-dark border border-purple-500/40 space-y-3 h-[calc(100%-1.75rem)] flex flex-col justify-between hover:border-purple-500 hover:-translate-y-1 transition-all shadow-sm hover:shadow-purple-500/20">
-                        <div class="space-y-2">
-                            <div class="font-semibold text-purple-400 flex items-center gap-1.5">
-                                <i class="fa-solid fa-chart-pie text-sm"></i> Operating View & Genie
-                            </div>
-                            <ul class="space-y-1.5 theme-text-muted text-slate-300 text-[11px]">
-                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-desktop text-purple-400 mt-0.5"></i> Daily Finance Operating View</li>
-                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-users-gear text-purple-400 mt-0.5"></i> Executive, Controller, AR/AP Views</li>
-                                <li class="flex items-start gap-1.5"><i class="fa-solid fa-comments text-purple-400 mt-0.5"></i> Genie AI Natural Language Space</li>
-                            </ul>
-                        </div>
-                        <div class="p-2 rounded bg-purple-500/10 border border-purple-500/20 text-[10px] text-purple-300">
-                            <strong>Freshness SLA:</strong> Ready before start of business.
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- Phase Navigation Tabs & Timeline Cards -->
-        <section data-aos="fade-up" class="space-y-6">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h2 class="text-2xl font-bold theme-text-bright text-white">Execution Milestones & Deliverables</h2>
-                    <p class="text-sm theme-text-muted text-slate-400">Toggle milestone completion checkboxes to track project progress in real time.</p>
-                </div>
-                
-                <!-- Workstream Filter Buttons -->
-                <div class="flex flex-wrap gap-1.5 theme-card bg-db-card p-1.5 rounded-lg border border-db-border text-xs">
-                    <button onclick="filterCategory('all', this)" class="filter-btn active px-3 py-1.5 rounded-md bg-db-orange text-white font-medium transition hover:scale-105">All Workstreams</button>
-                    <button onclick="filterCategory('foundation', this)" class="filter-btn px-3 py-1.5 rounded-md theme-text-muted text-slate-400 hover:text-white transition hover:scale-105">Foundation</button>
-                    <button onclick="filterCategory('data', this)" class="filter-btn px-3 py-1.5 rounded-md theme-text-muted text-slate-400 hover:text-white transition hover:scale-105">Data & DQ</button>
-                    <button onclick="filterCategory('analytics', this)" class="filter-btn px-3 py-1.5 rounded-md theme-text-muted text-slate-400 hover:text-white transition hover:scale-105">Analytics & AI</button>
-                </div>
-            </div>
-
-            <!-- Milestone Cards Grid -->
-            <div class="grid grid-cols-1 gap-5" id="phase-container">
-
-                <!-- Milestone 1 -->
-                <div data-aos="fade-up" data-aos-delay="100" class="phase-card foundation theme-card bg-db-card border border-db-border rounded-xl p-5 hover:border-db-border/80 transition-all duration-300 hover:shadow-lg">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" class="milestone-check w-5 h-5 rounded border-db-border text-db-orange focus:ring-db-orange cursor-pointer" onchange="updateProgress()">
-                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-db-orange/20 text-db-orange font-bold text-sm border border-db-orange/40">1</span>
-                            <div>
-                                <h3 class="text-lg font-bold theme-text-bright text-white">Mobilization, Assessment & KPI Definition</h3>
-                                <p class="text-xs theme-text-muted text-slate-400">Weeks 1 – 2 · Workstream 1</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 text-xs border border-slate-700">Gating Phase</span>
-                            <button onclick="toggleCollapse('p1-body', this)" class="p-1.5 rounded theme-subcard border border-db-border text-slate-400 hover:text-white">
-                                <i class="fa-solid fa-chevron-up transition-transform duration-200"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div id="p1-body" class="mt-4 space-y-4">
-                        <p class="text-sm theme-text-muted text-slate-300">Assess source system APIs (SQL Server, Business Central, HubSpot), profile data, and finalize SLA thresholds.</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                            <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-db-orange font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1"></i> Deliverables</span>
-                                <ul class="list-disc list-inside space-y-1">
-                                    <li>Source system API feasibility assessment</li>
-                                    <li>Signed-off KPI Definition Register</li>
-                                    <li>Freshness & SLA Definition Document</li>
-                                </ul>
-                            </div>
-                            <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-amber-400 font-semibold block mb-1.5"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Critical Dependencies</span>
-                                <p>Thresholds for "critical", "at risk", "past due", and "billable work" must be locked in before modelling begins.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Milestone 2 -->
-                <div data-aos="fade-up" data-aos-delay="150" class="phase-card foundation theme-card bg-db-card border border-db-border rounded-xl p-5 hover:border-db-border/80 transition-all duration-300 hover:shadow-lg">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" class="milestone-check w-5 h-5 rounded border-db-border text-db-orange focus:ring-db-orange cursor-pointer" onchange="updateProgress()">
-                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-db-orange/20 text-db-orange font-bold text-sm border border-db-orange/40">2</span>
-                            <div>
-                                <h3 class="text-lg font-bold theme-text-bright text-white">Platform Foundation & Unity Catalog Setup</h3>
-                                <p class="text-xs theme-text-muted text-slate-400">Weeks 2 – 3 · Workstream 2</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 text-xs border border-slate-700">Infrastructure</span>
-                            <button onclick="toggleCollapse('p2-body', this)" class="p-1.5 rounded theme-subcard border border-db-border text-slate-400 hover:text-white">
-                                <i class="fa-solid fa-chevron-up transition-transform duration-200"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div id="p2-body" class="mt-4 space-y-4">
-                        <p class="text-sm theme-text-muted text-slate-300">Set up Dev/Test/Prod environments, Unity Catalog governance, and automated CI/CD deployment pipelines.</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                            <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-db-orange font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1"></i> Deliverables</span>
-                                <ul class="list-disc list-inside space-y-1">
-                                    <li>Dev, Test & Prod environments</li>
-                                    <li>Unity Catalog role-based security model</li>
-                                    <li>Git CI/CD pipeline automation</li>
-                                </ul>
-                            </div>
-                            <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-blue-400 font-semibold block mb-1.5"><i class="fa-solid fa-lock mr-1"></i> Security Guardrails</span>
-                                <p>All operations execute within client boundaries — zero external data egress.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Milestone 3 -->
-                <div data-aos="fade-up" data-aos-delay="200" class="phase-card data theme-card bg-db-card border border-db-border rounded-xl p-5 hover:border-db-border/80 transition-all duration-300 hover:shadow-lg">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" class="milestone-check w-5 h-5 rounded border-db-border text-db-orange focus:ring-db-orange cursor-pointer" onchange="updateProgress()">
-                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-db-orange/20 text-db-orange font-bold text-sm border border-db-orange/40">3</span>
-                            <div>
-                                <h3 class="text-lg font-bold theme-text-bright text-white">Automated Ingestion & Daily Snapshot Layer</h3>
-                                <p class="text-xs theme-text-muted text-slate-400">Weeks 3 – 5 · Workstream 3</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="px-2.5 py-1 rounded bg-rose-500/10 text-rose-400 text-xs border border-rose-500/30">Day-1 Mandatory</span>
-                            <button onclick="toggleCollapse('p3-body', this)" class="p-1.5 rounded theme-subcard border border-db-border text-slate-400 hover:text-white">
-                                <i class="fa-solid fa-chevron-up transition-transform duration-200"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div id="p3-body" class="mt-4 space-y-4">
-                        <p class="text-sm theme-text-muted text-slate-300">Build automated connectors for API/CDC, backload historical Bronze records, and initiate daily point-in-time snapshots.</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                            <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-db-orange font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1"></i> Deliverables</span>
-                                <ul class="list-disc list-inside space-y-1">
-                                    <li>Production ingestion pipelines (Ported from POV)</li>
-                                    <li>Bronze historical backload</li>
-                                    <li>Point-in-time historization snapshot layer</li>
-                                </ul>
-                            </div>
-                            <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-rose-400 font-semibold block mb-1.5"><i class="fa-solid fa-clock mr-1"></i> Snapshot Constraint</span>
-                                <p>Snapshots cannot be backfilled! Daily capture must run from Day 1 to track AR aging & forecast accuracy.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Milestone 4 -->
-                <div data-aos="fade-up" data-aos-delay="250" class="phase-card data theme-card bg-db-card border border-db-border rounded-xl p-5 hover:border-db-border/80 transition-all duration-300 hover:shadow-lg">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" class="milestone-check w-5 h-5 rounded border-db-border text-db-orange focus:ring-db-orange cursor-pointer" onchange="updateProgress()">
-                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-db-orange/20 text-db-orange font-bold text-sm border border-db-orange/40">4</span>
-                            <div>
-                                <h3 class="text-lg font-bold theme-text-bright text-white">Conformed Data Modelling & DQ Framework</h3>
-                                <p class="text-xs theme-text-muted text-slate-400">Weeks 5 – 8 · Workstreams 4 & 5</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 text-xs border border-slate-700">Core Transformation</span>
-                            <button onclick="toggleCollapse('p4-body', this)" class="p-1.5 rounded theme-subcard border border-db-border text-slate-400 hover:text-white">
-                                <i class="fa-solid fa-chevron-up transition-transform duration-200"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div id="p4-body" class="mt-4 space-y-4">
-                        <p class="text-sm theme-text-muted text-slate-300">Build conformed Silver models, cross-system entity matching (Customer, Vendor, Job), Gold finance products, and automated DQ profiling.</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                            <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-db-orange font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1"></i> Deliverables</span>
-                                <ul class="list-disc list-inside space-y-1">
-                                    <li>Conformed Silver & Gold Data Products</li>
-                                    <li>Cross-system entity matching engine</li>
-                                    <li>DQ Rule Library & Exception Register</li>
-                                </ul>
-                            </div>
-                            <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-amber-400 font-semibold block mb-1.5"><i class="fa-solid fa-user-gear mr-1"></i> Remediation Loop</span>
-                                <p>Issues are flagged automatically, but client teams perform source corrections before dashboard validation.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Milestone 5 -->
-                <div data-aos="fade-up" data-aos-delay="300" class="phase-card analytics theme-card bg-db-card border border-db-border rounded-xl p-5 hover:border-db-border/80 transition-all duration-300 hover:shadow-lg">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" class="milestone-check w-5 h-5 rounded border-db-border text-db-orange focus:ring-db-orange cursor-pointer" onchange="updateProgress()">
-                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-db-orange/20 text-db-orange font-bold text-sm border border-db-orange/40">5</span>
-                            <div>
-                                <h3 class="text-lg font-bold theme-text-bright text-white">Daily Finance Dashboard & Genie AI Query Space</h3>
-                                <p class="text-xs theme-text-muted text-slate-400">Weeks 8 – 10 · Workstreams 6 & 7</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="px-2.5 py-1 rounded bg-purple-500/10 text-purple-400 text-xs border border-purple-500/30">Analytics & AI</span>
-                            <button onclick="toggleCollapse('p5-body', this)" class="p-1.5 rounded theme-subcard border border-db-border text-slate-400 hover:text-white">
-                                <i class="fa-solid fa-chevron-up transition-transform duration-200"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div id="p5-body" class="mt-4 space-y-4">
-                        <p class="text-sm theme-text-muted text-slate-300">Deliver 7-area daily finance dashboard in Databricks SQL, role-based persona views, and natural-language querying via Databricks Genie.</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                            <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-db-orange font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1"></i> Deliverables</span>
-                                <ul class="list-disc list-inside space-y-1">
-                                    <li>Daily Finance Operating View Dashboard</li>
-                                    <li>3 Persona Views (Executive, Controller, AR/AP)</li>
-                                    <li>Curated Genie space & metric validation</li>
-                                </ul>
-                            </div>
-                            <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-purple-400 font-semibold block mb-1.5"><i class="fa-solid fa-bell mr-1"></i> Daily Freshness SLA</span>
-                                <p>Refreshed dashboards and automated exception alerts delivered before start of business each working day.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Milestone 6 -->
-                <div data-aos="fade-up" data-aos-delay="350" class="phase-card analytics theme-card bg-db-card border border-db-border rounded-xl p-5 hover:border-db-border/80 transition-all duration-300 hover:shadow-lg">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" class="milestone-check w-5 h-5 rounded border-db-border text-db-orange focus:ring-db-orange cursor-pointer" onchange="updateProgress()">
-                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-db-orange/20 text-db-orange font-bold text-sm border border-db-orange/40">6</span>
-                            <div>
-                                <h3 class="text-lg font-bold theme-text-bright text-white">Validation, UAT, Production Handover & Hypercare</h3>
-                                <p class="text-xs theme-text-muted text-slate-400">Weeks 10 – 12 · Workstream 8</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 text-xs border border-emerald-500/30">Go-Live</span>
-                            <button onclick="toggleCollapse('p6-body', this)" class="p-1.5 rounded theme-subcard border border-db-border text-slate-400 hover:text-white">
-                                <i class="fa-solid fa-chevron-up transition-transform duration-200"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div id="p6-body" class="mt-4 space-y-4">
-                        <p class="text-sm theme-text-muted text-slate-300">Reconcile data with legacy source systems, guide user acceptance testing, transition runbooks, and provide hypercare.</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                            <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-db-orange font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1"></i> Deliverables</span>
-                                <ul class="list-disc list-inside space-y-1">
-                                    <li>Reconciliation Pack vs Source Systems</li>
-                                    <li>Production Release & Technical Runbooks</li>
-                                    <li>Post Go-Live Hypercare Support</li>
-                                </ul>
-                            </div>
-                            <div class="theme-subcard bg-db-dark p-3.5 rounded-lg border border-db-border">
-                                <span class="text-emerald-400 font-semibold block mb-1.5"><i class="fa-solid fa-circle-check mr-1"></i> Staged Value Release</span>
-                                <p>Working output released and validated in stages rather than a single week 12 drop.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- Daily Finance Operating View Scope Matrix -->
-        <section data-aos="fade-up" class="theme-card bg-db-card border border-db-border rounded-xl p-6 shadow-xl">
-            <h2 class="text-xl font-bold theme-text-bright text-white mb-2">Daily Finance Operating View Scope (7 Focus Areas)</h2>
-            <p class="text-xs theme-text-muted text-slate-400 mb-6">Functional coverage required before start of business each working day.</p>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
-                <div class="p-4 rounded-lg theme-subcard bg-db-dark border border-db-border hover:-translate-y-1 transition-transform">
-                    <div class="flex items-center gap-2 mb-2 font-semibold text-db-orange">
-                        <i class="fa-solid fa-wallet text-amber-500"></i> 1. Cash Position & Liquidity
-                    </div>
-                    <p class="theme-text-muted text-slate-300">Current balance, 7-day forecast (AR/AP timing), inflows/outflows, funding risks.</p>
-                </div>
-                <div class="p-4 rounded-lg theme-subcard bg-db-dark border border-db-border hover:-translate-y-1 transition-transform">
-                    <div class="flex items-center gap-2 mb-2 font-semibold text-db-orange">
-                        <i class="fa-solid fa-hand-holding-dollar text-emerald-400"></i> 2. Receivables & Collections
-                    </div>
-                    <p class="theme-text-muted text-slate-300">Cash collected yesterday, past-due accounts, commitments, billing disputes, daily priorities.</p>
-                </div>
-                <div class="p-4 rounded-lg theme-subcard bg-db-dark border border-db-border hover:-translate-y-1 transition-transform">
-                    <div class="flex items-center gap-2 mb-2 font-semibold text-db-orange">
-                        <i class="fa-solid fa-file-invoice-dollar text-blue-400"></i> 3. Accounts Payable
-                    </div>
-                    <p class="theme-text-muted text-slate-300">Critical vendor payments due, credit hold risk, approval bottlenecks, major disbursements.</p>
-                </div>
-                <div class="p-4 rounded-lg theme-subcard bg-db-dark border border-db-border hover:-translate-y-1 transition-transform">
-                    <div class="flex items-center gap-2 mb-2 font-semibold text-db-orange">
-                        <i class="fa-solid fa-chart-line text-purple-400"></i> 4. Billing & Revenue Capture
-                    </div>
-                    <p class="theme-text-muted text-slate-300">Invoices issued yesterday, unbilled work, open change orders, unbilled revenue at risk.</p>
-                </div>
-                <div class="p-4 rounded-lg theme-subcard bg-db-dark border border-db-border hover:-translate-y-1 transition-transform">
-                    <div class="flex items-center gap-2 mb-2 font-semibold text-db-orange">
-                        <i class="fa-solid fa-scale-balanced text-orange-400"></i> 5. Controls & Close
-                    </div>
-                    <p class="theme-text-muted text-slate-300">Approval delays, reconciliation exceptions, items needing action, month-end close progress.</p>
-                </div>
-                <div class="p-4 rounded-lg theme-subcard bg-db-dark border border-db-border hover:-translate-y-1 transition-transform">
-                    <div class="flex items-center gap-2 mb-2 font-semibold text-db-orange">
-                        <i class="fa-solid fa-user-check text-teal-400"></i> 6. Payroll & Compliance
-                    </div>
-                    <p class="theme-text-muted text-slate-300">Payroll readiness, missing timesheets, expense reports, tax & compliance alerts.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Data Engineer Expert Value-Add Suggestions -->
-        <section data-aos="fade-up" class="theme-card bg-gradient-to-r from-db-card via-db-dark to-db-card border border-db-orange/30 rounded-xl p-6 shadow-2xl">
-            <div class="flex items-center gap-3 mb-4">
-                <i class="fa-solid fa-lightbulb text-2xl text-yellow-400 animate-pulse"></i>
-                <div>
-                    <h2 class="text-xl font-bold theme-text-bright text-white">Data Engineering Enhancements & Risk Mitigations</h2>
-                    <p class="text-xs theme-text-muted text-slate-400">Proactive architectural recommendations to strengthen Phase 1 execution.</p>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                <div class="p-4 rounded-lg theme-subcard bg-db-dark/80 border border-db-border">
-                    <h4 class="font-bold text-db-orange mb-1">1. Adopt Delta Live Tables (DLT) for Ingestion & DQ</h4>
-                    <p class="theme-text-muted text-slate-300">Instead of raw PySpark scripts, utilize Databricks DLT for Bronze/Silver. DLT offers built-in expectations for DQ thresholds, auto-lineage, and automatic pipeline retries with zero manual orchestration setup.</p>
-                </div>
-                <div class="p-4 rounded-lg theme-subcard bg-db-dark/80 border border-db-border">
-                    <h4 class="font-bold text-db-orange mb-1">2. Synthetic Snapshot Backfill Strategy</h4>
-                    <p class="theme-text-muted text-slate-300">Since daily snapshots cannot be backfilled from source systems, create a synthetic backfill script using historical log tables during Week 2 to give executives 90-day trendlines immediately on Day 1.</p>
-                </div>
-                <div class="p-4 rounded-lg theme-subcard bg-db-dark/80 border border-db-border">
-                    <h4 class="font-bold text-db-orange mb-1">3. FinOps & Serverless Compute Governance</h4>
-                    <p class="theme-text-muted text-slate-300">Enforce Databricks Serverless SQL for Genie & Dashboards, and set auto-termination on ETL clusters to 15 minutes. Implement budget alert webhooks to prevent compute cost surprises.</p>
-                </div>
-                <div class="p-4 rounded-lg theme-subcard bg-db-dark/80 border border-db-border">
-                    <h4 class="font-bold text-db-orange mb-1">4. Contractual SLA on Client Source Remediation</h4>
-                    <p class="theme-text-muted text-slate-300">Establish a strict 48-hour client SLA for fixing source-side data errors. Add an automated fallback layer to quarantine bad records so remaining clean data can still populate morning dashboards.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Execution Team & Leadership (Moved to Bottom) -->
-        <section data-aos="fade-up" class="theme-card bg-db-card border border-db-border rounded-xl p-6 shadow-xl">
-            <div class="mb-6">
-                <h2 class="text-xl font-bold theme-text-bright text-white">Proposed Execution Team & Leadership</h2>
-                <p class="text-sm theme-text-muted text-slate-400 mt-1">Dedicated domain experts deployed by Invotech Services to deliver Phase 1 milestones securely and on schedule.</p>
-            </div>
-            
-            <div class="mb-6">
-                <h3 class="text-sm font-semibold text-db-orange mb-3 border-b border-db-border/60 pb-2">Core Project Resourcing Needs</h3>
-                <div class="flex flex-wrap gap-3 text-xs">
-                    <span class="px-3 py-1.5 rounded-lg theme-subcard bg-db-dark border border-db-border text-slate-300 font-medium hover:scale-105 transition-transform"><i class="fa-solid fa-sitemap text-blue-400 mr-1.5"></i> 1x Solution Architect</span>
-                    <span class="px-3 py-1.5 rounded-lg theme-subcard bg-db-dark border border-db-border text-slate-300 font-medium hover:scale-105 transition-transform"><i class="fa-solid fa-code text-yellow-400 mr-1.5"></i> 1x Senior Data Engineer</span>
-                    <span class="px-3 py-1.5 rounded-lg theme-subcard bg-db-dark border border-db-border text-slate-300 font-medium hover:scale-105 transition-transform"><i class="fa-solid fa-server text-emerald-400 mr-1.5"></i> 1x DevOps Engineer</span>
-                    <span class="px-3 py-1.5 rounded-lg theme-subcard bg-db-dark border border-db-border text-slate-300 font-medium hover:scale-105 transition-transform"><i class="fa-solid fa-diagram-project text-purple-400 mr-1.5"></i> 1x Business Analyst (Knowledge Graph Expert)</span>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <!-- Neeraj Mittra -->
-                <div class="p-5 rounded-lg theme-subcard bg-db-dark border border-db-border relative overflow-hidden flex flex-col group hover:border-blue-500/50 transition-colors">
-                    <div class="absolute top-0 right-0 p-2 bg-blue-500/10 rounded-bl-lg border-b border-l border-blue-500/20 group-hover:bg-blue-500/20 transition-colors">
-                        <i class="fa-solid fa-user-tie text-blue-400 text-sm"></i>
-                    </div>
-                    <h4 class="font-bold text-slate-200 text-base">Neeraj Mittra</h4>
-                    <p class="text-xs text-blue-400 font-medium mb-3 uppercase tracking-wider">Account manager</p>
-                    <p class="text-xs theme-text-muted text-slate-400 leading-relaxed mt-auto">Drives overall project governance, timeline execution, and cross-functional alignment. Responsible for ensuring technical milestones map precisely to business value and SLAs.</p>
-                </div>
-                
-                <!-- Ashish Golccha -->
-                <div class="p-5 rounded-lg theme-subcard bg-db-dark border border-db-border relative overflow-hidden flex flex-col group hover:border-db-orange/50 transition-colors">
-                    <div class="absolute top-0 right-0 p-2 bg-db-orange/10 rounded-bl-lg border-b border-l border-db-orange/20 group-hover:bg-db-orange/20 transition-colors">
-                        <i class="fa-solid fa-network-wired text-db-orange text-sm"></i>
-                    </div>
-                    <h4 class="font-bold text-slate-200 text-base">Ashish Golccha</h4>
-                    <p class="text-xs text-db-orange font-medium mb-3 uppercase tracking-wider">Solution Architect</p>
-                    <p class="text-xs theme-text-muted text-slate-400 leading-relaxed mt-auto">
-                        <strong>9+ years of experience.</strong> Currently a Senior Specialist at MSD. Expert in architecting scalable data solutions across analytics domains. Brings deep, proven expertise in AWS (Glue, Redshift, S3), PySpark, Databricks, enterprise knowledge graph mapping, ontology design, and establishing end-to-end, cost-optimized enterprise pipelines.
-                    </p>
-                </div>
-
-                <!-- Tejas Anand -->
-                <div class="p-5 rounded-lg theme-subcard bg-db-dark border border-db-border relative overflow-hidden flex flex-col group hover:border-emerald-500/50 transition-colors">
-                    <div class="absolute top-0 right-0 p-2 bg-emerald-500/10 rounded-bl-lg border-b border-l border-emerald-500/20 group-hover:bg-emerald-500/20 transition-colors">
-                        <i class="fa-solid fa-microchip text-emerald-400 text-sm"></i>
-                    </div>
-                    <h4 class="font-bold text-slate-200 text-base">Tejas Anand</h4>
-                    <p class="text-xs text-emerald-400 font-medium mb-3 uppercase tracking-wider">Senior Semantic/AI Engineer</p>
-                    <p class="text-xs theme-text-muted text-slate-400 leading-relaxed mt-auto">
-                        <strong>5.5+ years of experience.</strong> Specializes in designing robust cloud-native data pipelines on AWS and Databricks. Deep expertise in PySpark, Unity Catalog governance, orchestrating CI/CD with Databricks Asset Bundles, knowledge graph modeling, semantic ontology architecture, and integrating OpenAI APIs to bridge Medallion Architectures for accelerated insights.
-                    </p>
-                </div>
-            </div>
-            
-            <div class="mt-5 p-3.5 rounded-lg bg-slate-800/40 border border-slate-700/60 text-xs text-slate-400 flex items-center gap-2">
-                <i class="fa-solid fa-clock-rotate-left text-slate-500"></i> 
-                <span><em>Note: Specific personnel for the DevOps Engineer and Business Analyst (Knowledge Graph) roles are currently TBD and will be formally allocated prior to project kick-off.</em></span>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Interactive Tool Modal -->
-    <div id="tech-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="theme-card bg-db-card border border-db-border rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl relative transition-transform transform scale-95" id="modal-content">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
-            <div class="flex items-center gap-3">
-                <div id="modal-icon-container" class="p-2.5 rounded-lg bg-db-dark border border-db-border text-2xl"></div>
-                <h3 id="modal-title" class="text-lg font-bold text-white theme-text-bright"></h3>
-            </div>
-            <p id="modal-desc" class="text-xs theme-text-muted text-slate-300 leading-relaxed"></p>
-            <button onclick="closeModal()" class="w-full py-2 bg-db-orange text-white rounded-lg text-xs font-semibold hover:bg-db-orange/90 transition">Close Overview</button>
-        </div>
+      <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+        <button id="toggle-theme" type="button" aria-pressed="false"
+                class="px-3 py-1.5 rounded-lg bg-surface2 border border-edge hover:border-brand text-xs font-medium flex items-center gap-2 transition hover:scale-105">
+          <i id="theme-icon" class="fa-solid fa-sun text-amber-400" aria-hidden="true"></i>
+          <span id="theme-text" class="hidden sm:inline">Light Mode</span>
+        </button>
+      </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="border-t border-db-border py-6 bg-db-dark theme-subcard mt-12">
-        <div class="max-w-7xl mx-auto px-4 text-center flex flex-col md:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-2 group">
-                <img src="Logo 2 green blue.png" alt="Invotech Services Logo" class="h-5 opacity-70 filter grayscale brightness-200 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300" onerror="this.src='https://via.placeholder.com/150x50?text=Logo'">
-                <span class="text-xs theme-text-muted text-slate-500 border-l border-slate-600 pl-2 ml-1">Databricks Phase 1 Architecture Plan</span>
-            </div>
-            <div class="text-xs theme-text-muted text-slate-500">
-                Proprietary & Confidential
-            </div>
+    <!-- Milestone completion tracker -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3 mt-2">
+      <div class="flex items-center justify-between text-xs mb-1 font-semibold">
+        <span class="text-inkmuted"><i class="fa-solid fa-list-check text-brand mr-1" aria-hidden="true"></i> Phase 1 Milestone Progress</span>
+        <span id="progress-text" class="text-brand" role="status" aria-live="polite">0 of 6 Milestones Completed (0%)</span>
+      </div>
+      <div class="w-full bg-slate-700/40 rounded-full h-2 overflow-hidden border border-edge" role="progressbar"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress-track">
+        <div id="progress-bar" class="bg-gradient-to-r from-brand to-emerald-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+    <!-- Overview -->
+    <section data-aos="fade-up" class="bg-surface border border-edge rounded-xl p-6 shadow-xl theme-shadow relative overflow-hidden group">
+      <div class="absolute top-0 right-0 w-64 h-64 bg-brand/5 rounded-full blur-3xl group-hover:bg-brand/10 transition-colors duration-700" aria-hidden="true"></div>
+      <div class="relative z-10 flex flex-col md:flex-row gap-6 items-center">
+        <div class="p-4 bg-bg/80 rounded-full border border-edge/50 animate-float hidden sm:flex" aria-hidden="true">
+          <i class="fa-solid fa-globe text-3xl text-brand"></i>
         </div>
-    </footer>
+        <div>
+          <h2 class="text-2xl font-bold text-inkbright mb-2">Project &amp; Company Overview</h2>
+          <p class="text-sm text-inkmuted leading-relaxed">
+            Welcome to the Phase 1 architectural blueprint for the enterprise Databricks Lakehouse implementation. Delivered by <strong>Invotech Services</strong> in strategic partnership with <a href="https://s3s.com/" target="_blank" rel="noopener" class="text-accent underline hover:text-blue-400 transition-colors">S3S</a>, this initiative is focused on transforming distributed, raw organizational data into governed, actionable finance data products. By leveraging cutting-edge cloud infrastructure, advanced AI engineering, and semantic layers, we aim to eliminate legacy data silos and empower your teams with high-performance, real-time analytics.
+          </p>
+        </div>
+      </div>
+    </section>
 
-    <!-- AOS Script Initialization -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script>
-        AOS.init({
-            duration: 800,
-            once: true,
-            offset: 100,
+    <!-- POV reusability -->
+    <section data-aos="fade-up" data-aos-delay="100" class="bg-gradient-to-r from-surface via-slate-800/40 to-surface border border-emerald-500/30 rounded-xl p-6 shadow-xl theme-shadow relative overflow-hidden">
+      <div class="absolute top-0 right-0 p-16 bg-emerald-500/5 rounded-full blur-3xl" aria-hidden="true"></div>
+      <div class="relative z-10 flex items-start gap-4">
+        <div class="p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/30 hidden sm:block animate-float" aria-hidden="true">
+          <i class="fa-solid fa-flask-vial text-2xl text-emerald-400"></i>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold text-inkbright mb-2">Proof of Value (POV) Validation &amp; Pipeline Reusability</h2>
+          <p class="text-sm text-inkmuted leading-relaxed">
+            Prior to this phase, a Proof of Value (POV) to validate core architectural assumptions was executed.
+            <strong class="text-emerald-400 font-semibold">We need to analyse and understand the foundational data pipelines engineered during the POV if they are fully reusable.</strong>
+            Because the initial ingestion and transformation logic was built adhering to production-grade Databricks Medallion standards (PySpark &amp; Delta Lake), we will directly port and scale these assets. This strategic advantage eliminates redundant development, accelerates our time-to-market for Phase 1, and significantly de-risks the delivery timeline.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Architecture diagram -->
+    <section data-aos="fade-up" data-aos-delay="200" class="bg-surface rounded-xl p-6 border border-edge shadow-xl theme-shadow space-y-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-edge/60 pb-4">
+        <div>
+          <h2 class="text-xl font-bold text-inkbright flex items-center gap-2">
+            <i class="fa-solid fa-sitemap text-brand" aria-hidden="true"></i> High-Level Lakehouse Target Architecture
+          </h2>
+          <p class="text-xs text-inkmuted">Interactive end-to-end data flow: Source Systems → Medallion Layer → Role-Based Analytics.</p>
+        </div>
+        <button type="button" data-modal="uc"
+                class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 animate-pulse hover:bg-emerald-500/20 transition-colors">
+          <i class="fa-solid fa-shield-halved mr-1" aria-hidden="true"></i> Unity Catalog Governed
+        </button>
+      </div>
+
+      <div class="flex justify-center w-full overflow-hidden bg-bg/50 p-4 sm:p-8 rounded-xl border border-edge/50 hover:border-edge transition-colors">
+        <pre class="mermaid w-full">
+flowchart LR
+    classDef source fill:#151E28,stroke:#3B82F6,stroke-width:1px,color:#E2E8F0;
+    classDef dbx fill:#1B252C,stroke:#FF3621,stroke-width:2px,color:#fff;
+    classDef gov fill:#1B252C,stroke:#10B981,stroke-width:1px,color:#E2E8F0;
+    classDef ai fill:#1B252C,stroke:#A855F7,stroke-width:1px,color:#E2E8F0;
+
+    subgraph Sources["1. Source Systems"]
+        direction TB
+        SQL["SQL Server&lt;br/&gt;(Internal)"]:::source
+        BC["Business Central&lt;br/&gt;(ERP)"]:::source
+        HubSpot["HubSpot&lt;br/&gt;(CRM)"]:::source
+    end
+
+    subgraph Medallion["2. Databricks Medallion Layer"]
+        direction LR
+        Bronze["Bronze&lt;br/&gt;(Raw API &amp; Snapshots)"]:::dbx
+        Silver["Silver&lt;br/&gt;(Conformed &amp; Matched)"]:::dbx
+        Gold["Gold&lt;br/&gt;(Finance Data Products)"]:::dbx
+    end
+
+    subgraph Governance["3. Governance &amp; Security"]
+        UC["Unity Catalog&lt;br/&gt;(Row/Column RBAC)"]:::gov
+    end
+
+    subgraph Consumption["4. Business Serving"]
+        direction TB
+        Dash["Finance Operating View&lt;br/&gt;(Dashboards)"]:::ai
+        Genie["Genie AI&lt;br/&gt;(Natural Language)"]:::ai
+    end
+
+    SQL --> Bronze
+    BC --> Bronze
+    HubSpot --> Bronze
+
+    Bronze --> Silver
+    Silver --> Gold
+
+    UC -.- Bronze
+    UC -.- Silver
+    UC -.- Gold
+
+    Gold --> Dash
+    Gold --> Genie
+        </pre>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 text-xs">
+
+        <!-- Stage 1: Sources -->
+        <div class="space-y-3" data-aos="fade-up" data-aos-delay="300">
+          <div class="font-semibold text-inkmuted flex items-center justify-between">
+            <span>1. Source Systems</span>
+            <i class="fa-solid fa-arrow-right text-brand hidden lg:inline animate-pulse" aria-hidden="true"></i>
+          </div>
+
+          <button type="button" data-modal="sqlserver"
+                  class="w-full text-left p-3.5 rounded-lg bg-surface2 border border-edge space-y-2 hover:border-blue-400 hover:-translate-y-1 transition-all shadow-sm hover:shadow-blue-500/20">
+            <div class="font-semibold text-blue-400 flex items-center justify-between">
+              <span><i class="devicon-microsoftsqlserver-plain mr-1.5" aria-hidden="true"></i> SQL Server</span>
+              <span class="text-[10px] opacity-75">Internal Portal</span>
+            </div>
+            <p class="text-inkmuted text-[11px]">Field assignments, job transactions, equipment history, operator logs.</p>
+          </button>
+
+          <button type="button" data-modal="bc"
+                  class="w-full text-left p-3.5 rounded-lg bg-surface2 border border-edge space-y-2 hover:border-blue-500 hover:-translate-y-1 transition-all shadow-sm hover:shadow-blue-500/20">
+            <div class="font-semibold text-blue-500 flex items-center justify-between">
+              <span><i class="fa-solid fa-building-columns mr-1.5" aria-hidden="true"></i> Business Central</span>
+              <span class="text-[10px] opacity-75">Dynamics 365 ERP</span>
+            </div>
+            <p class="text-inkmuted text-[11px]">GL, AR/AP, invoices, costs, revenue, assets, rental tickets.</p>
+          </button>
+
+          <button type="button" data-modal="hubspot"
+                  class="w-full text-left p-3.5 rounded-lg bg-surface2 border border-edge space-y-2 hover:border-orange-500 hover:-translate-y-1 transition-all shadow-sm hover:shadow-orange-500/20">
+            <div class="font-semibold text-orange-500 flex items-center justify-between">
+              <span><i class="fa-brands fa-hubspot mr-1.5" aria-hidden="true"></i> HubSpot CRM</span>
+              <span class="text-[10px] opacity-75">Sales Platform</span>
+            </div>
+            <p class="text-inkmuted text-[11px]">Companies, contacts, deals, pipeline stages, owners.</p>
+          </button>
+        </div>
+
+        <!-- Stage 2: Bronze -->
+        <div class="space-y-3" data-aos="fade-up" data-aos-delay="400">
+          <div class="font-semibold text-inkmuted flex items-center justify-between">
+            <span>2. Bronze Layer</span>
+            <i class="fa-solid fa-arrow-right text-brand hidden lg:inline animate-pulse" aria-hidden="true"></i>
+          </div>
+
+          <button type="button" data-modal="pyspark"
+                  class="w-full text-left p-4 rounded-lg bg-surface2 border border-amber-600/40 space-y-3 h-[calc(100%-1.75rem)] flex flex-col justify-between hover:border-amber-500 hover:-translate-y-1 transition-all shadow-sm hover:shadow-amber-500/20">
+            <div class="space-y-2">
+              <div class="font-semibold text-amber-500 flex items-center gap-1.5">
+                <i class="fa-solid fa-cubes text-sm" aria-hidden="true"></i> Raw Ingestion &amp; Snapshots
+              </div>
+              <ul class="space-y-1.5 text-inkmuted text-[11px]">
+                <li class="flex items-start gap-1.5"><i class="fa-solid fa-bolt text-amber-400 mt-0.5" aria-hidden="true"></i> Automated API/CDC pipelines</li>
+                <li class="flex items-start gap-1.5"><i class="fa-solid fa-clock-rotate-left text-amber-400 mt-0.5" aria-hidden="true"></i> Historical backload into Delta Lake</li>
+                <li class="flex items-start gap-1.5"><i class="fa-solid fa-camera text-amber-400 mt-0.5" aria-hidden="true"></i> Daily point-in-time snapshot capture</li>
+              </ul>
+            </div>
+            <div class="p-2 rounded bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-300">
+              <strong>Mandatory:</strong> Snapshots captured daily starting Day 1.
+            </div>
+          </button>
+        </div>
+
+        <!-- Stage 3: Silver & Gold -->
+        <div class="space-y-3" data-aos="fade-up" data-aos-delay="500">
+          <div class="font-semibold text-inkmuted flex items-center justify-between">
+            <span>3. Silver &amp; Gold Core</span>
+            <i class="fa-solid fa-arrow-right text-brand hidden lg:inline animate-pulse" aria-hidden="true"></i>
+          </div>
+
+          <button type="button" data-modal="databricks"
+                  class="w-full text-left p-4 rounded-lg bg-surface2 border border-brand/40 space-y-3 h-[calc(100%-1.75rem)] flex flex-col justify-between hover:border-brand hover:-translate-y-1 transition-all shadow-sm hover:shadow-brand/20">
+            <div class="space-y-2">
+              <div class="font-semibold text-brand flex items-center gap-1.5">
+                <i class="fa-solid fa-gem text-sm" aria-hidden="true"></i> Conformed Models &amp; DQ
+              </div>
+              <ul class="space-y-1.5 text-inkmuted text-[11px]">
+                <li class="flex items-start gap-1.5"><i class="fa-solid fa-link text-brand mt-0.5" aria-hidden="true"></i> Cross-system entity resolution</li>
+                <li class="flex items-start gap-1.5"><i class="fa-solid fa-filter-circle-xmark text-brand mt-0.5" aria-hidden="true"></i> Automated DQ profiling &amp; exceptions</li>
+                <li class="flex items-start gap-1.5"><i class="fa-solid fa-coins text-brand mt-0.5" aria-hidden="true"></i> Certified Gold Finance Data Products</li>
+              </ul>
+            </div>
+            <div class="p-2 rounded bg-brand/10 border border-brand/20 text-[10px] text-brand">
+              <strong>Governance:</strong> Row &amp; column RBAC in Unity Catalog.
+            </div>
+          </button>
+        </div>
+
+        <!-- Stage 4: Consumption -->
+        <div class="space-y-3" data-aos="fade-up" data-aos-delay="600">
+          <div class="font-semibold text-inkmuted">
+            <span>4. Business Serving</span>
+          </div>
+
+          <button type="button" data-modal="genie"
+                  class="w-full text-left p-4 rounded-lg bg-surface2 border border-purple-500/40 space-y-3 h-[calc(100%-1.75rem)] flex flex-col justify-between hover:border-purple-500 hover:-translate-y-1 transition-all shadow-sm hover:shadow-purple-500/20">
+            <div class="space-y-2">
+              <div class="font-semibold text-purple-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-pie text-sm" aria-hidden="true"></i> Operating View &amp; Genie
+              </div>
+              <ul class="space-y-1.5 text-inkmuted text-[11px]">
+                <li class="flex items-start gap-1.5"><i class="fa-solid fa-desktop text-purple-400 mt-0.5" aria-hidden="true"></i> Daily Finance Operating View</li>
+                <li class="flex items-start gap-1.5"><i class="fa-solid fa-users-gear text-purple-400 mt-0.5" aria-hidden="true"></i> Executive, Controller, AR/AP Views</li>
+                <li class="flex items-start gap-1.5"><i class="fa-solid fa-comments text-purple-400 mt-0.5" aria-hidden="true"></i> Genie AI Natural Language Space</li>
+              </ul>
+            </div>
+            <div class="p-2 rounded bg-purple-500/10 border border-purple-500/20 text-[10px] text-purple-300">
+              <strong>Freshness SLA:</strong> Ready before start of business.
+            </div>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Milestones -->
+    <section data-aos="fade-up" class="space-y-6" aria-labelledby="milestones-heading">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 id="milestones-heading" class="text-2xl font-bold text-inkbright">Execution Milestones &amp; Deliverables</h2>
+          <p class="text-sm text-inkmuted">Toggle milestone completion checkboxes to track project progress in real time.</p>
+        </div>
+
+        <div class="flex flex-wrap gap-1.5 bg-surface p-1.5 rounded-lg border border-edge text-xs" role="group" aria-label="Filter milestones by workstream">
+          <button type="button" data-filter="all" aria-pressed="true"
+                  class="filter-btn active px-3 py-1.5 rounded-md bg-brand text-white font-medium transition hover:scale-105">All Workstreams</button>
+          <button type="button" data-filter="foundation" aria-pressed="false"
+                  class="filter-btn px-3 py-1.5 rounded-md text-inkmuted hover:text-inkbright transition hover:scale-105">Foundation</button>
+          <button type="button" data-filter="data" aria-pressed="false"
+                  class="filter-btn px-3 py-1.5 rounded-md text-inkmuted hover:text-inkbright transition hover:scale-105">Data &amp; DQ</button>
+          <button type="button" data-filter="analytics" aria-pressed="false"
+                  class="filter-btn px-3 py-1.5 rounded-md text-inkmuted hover:text-inkbright transition hover:scale-105">Analytics &amp; AI</button>
+        </div>
+      </div>
+
+      <ul class="grid grid-cols-1 gap-5" id="phase-container">
+
+        <!-- Milestone 1 -->
+        <li data-aos="fade-up" data-aos-delay="100" class="phase-card foundation bg-surface border border-edge rounded-xl p-5 hover:border-edge/80 transition-all duration-300 hover:shadow-lg">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" class="milestone-check w-5 h-5 rounded border-edge text-brand focus:ring-brand cursor-pointer" aria-label="Mark milestone 1, Mobilization, Assessment & KPI Definition, as complete">
+              <span class="flex items-center justify-center w-8 h-8 rounded-full bg-brand/20 text-brand font-bold text-sm border border-brand/40" aria-hidden="true">1</span>
+              <span>
+                <h3 class="text-lg font-bold text-inkbright">Mobilization, Assessment &amp; KPI Definition</h3>
+                <span class="text-xs text-inkmuted block">Weeks 1 – 2 · Workstream 1</span>
+              </span>
+            </label>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 text-xs border border-slate-700">Gating Phase</span>
+              <button type="button" data-collapse-target="p1-body" aria-expanded="true" aria-controls="p1-body"
+                      class="p-1.5 rounded bg-surface2 border border-edge text-inkmuted hover:text-inkbright">
+                <i class="fa-solid fa-chevron-up transition-transform duration-200" aria-hidden="true"></i>
+                <span class="sr-only">Toggle milestone details</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="p1-body" class="mt-4 space-y-4">
+            <p class="text-sm text-inkmuted">Assess source system APIs (SQL Server, Business Central, HubSpot), profile data, and finalize SLA thresholds.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="bg-surface2 p-3.5 rounded-lg border border-edge">
+                <span class="text-brand font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1" aria-hidden="true"></i> Deliverables</span>
+                <ul class="list-disc list-inside space-y-1">
+                  <li>Source system API feasibility assessment</li>
+                  <li>Signed-off KPI Definition Register</li>
+                  <li>Freshness &amp; SLA Definition Document</li>
+                </ul>
+              </div>
+              <div class="bg-surface2 p-3.5 rounded-lg border border-edge">
+                <span class="text-amber-400 font-semibold block mb-1.5"><i class="fa-solid fa-triangle-exclamation mr-1" aria-hidden="true"></i> Critical Dependencies</span>
+                <p>Thresholds for "critical", "at risk", "past due", and "billable work" must be locked in before modelling begins.</p>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <!-- Milestone 2 -->
+        <li data-aos="fade-up" data-aos-delay="150" class="phase-card foundation bg-surface border border-edge rounded-xl p-5 hover:border-edge/80 transition-all duration-300 hover:shadow-lg">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" class="milestone-check w-5 h-5 rounded border-edge text-brand focus:ring-brand cursor-pointer" aria-label="Mark milestone 2, Platform Foundation & Unity Catalog Setup, as complete">
+              <span class="flex items-center justify-center w-8 h-8 rounded-full bg-brand/20 text-brand font-bold text-sm border border-brand/40" aria-hidden="true">2</span>
+              <span>
+                <h3 class="text-lg font-bold text-inkbright">Platform Foundation &amp; Unity Catalog Setup</h3>
+                <span class="text-xs text-inkmuted block">Weeks 2 – 3 · Workstream 2</span>
+              </span>
+            </label>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 text-xs border border-slate-700">Infrastructure</span>
+              <button type="button" data-collapse-target="p2-body" aria-expanded="true" aria-controls="p2-body"
+                      class="p-1.5 rounded bg-surface2 border border-edge text-inkmuted hover:text-inkbright">
+                <i class="fa-solid fa-chevron-up transition-transform duration-200" aria-hidden="true"></i>
+                <span class="sr-only">Toggle milestone details</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="p2-body" class="mt-4 space-y-4">
+            <p class="text-sm text-inkmuted">Set up Dev/Test/Prod environments, Unity Catalog governance, and automated CI/CD deployment pipelines.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="bg-surface2 p-3.5 rounded-lg border border-edge">
+                <span class="text-brand font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1" aria-hidden="true"></i> Deliverables</span>
+                <ul class="list-disc list-inside space-y-1">
+                  <li>Dev, Test &amp; Prod environments</li>
+                  <li>Unity Catalog role-based security model</li>
+                  <li>Git CI/CD pipeline automation</li>
+                </ul>
+              </div>
+              <div class="bg-surface2 p-3.5 rounded-lg border border-edge">
+                <span class="text-blue-400 font-semibold block mb-1.5"><i class="fa-solid fa-lock mr-1" aria-hidden="true"></i> Security Guardrails</span>
+                <p>All operations execute within client boundaries — zero external data egress.</p>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <!-- Milestone 3 -->
+        <li data-aos="fade-up" data-aos-delay="200" class="phase-card data bg-surface border border-edge rounded-xl p-5 hover:border-edge/80 transition-all duration-300 hover:shadow-lg">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" class="milestone-check w-5 h-5 rounded border-edge text-brand focus:ring-brand cursor-pointer" aria-label="Mark milestone 3, Automated Ingestion & Daily Snapshot Layer, as complete">
+              <span class="flex items-center justify-center w-8 h-8 rounded-full bg-brand/20 text-brand font-bold text-sm border border-brand/40" aria-hidden="true">3</span>
+              <span>
+                <h3 class="text-lg font-bold text-inkbright">Automated Ingestion &amp; Daily Snapshot Layer</h3>
+                <span class="text-xs text-inkmuted block">Weeks 3 – 5 · Workstream 3</span>
+              </span>
+            </label>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded bg-rose-500/10 text-rose-400 text-xs border border-rose-500/30">Day-1 Mandatory</span>
+              <button type="button" data-collapse-target="p3-body" aria-expanded="true" aria-controls="p3-body"
+                      class="p-1.5 rounded bg-surface2 border border-edge text-inkmuted hover:text-inkbright">
+                <i class="fa-solid fa-chevron-up transition-transform duration-200" aria-hidden="true"></i>
+                <span class="sr-only">Toggle milestone details</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="p3-body" class="mt-4 space-y-4">
+            <p class="text-sm text-inkmuted">Build automated connectors for API/CDC, backload historical Bronze records, and initiate daily point-in-time snapshots.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="bg-surface2 p-3.5 rounded-lg border border-edge">
+                <span class="text-brand font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1" aria-hidden="true"></i> Deliverables</span>
+                <ul class="list-disc list-inside space-y-1">
+                  <li>Production ingestion pipelines (Ported from POV)</li>
+                  <li>Bronze historical backload</li>
+                  <li>Point-in-time historization snapshot layer</li>
+                </ul>
+              </div>
+              <div class="bg-surface2 p-3.5 rounded-lg border border-edge">
+                <span class="text-rose-400 font-semibold block mb-1.5"><i class="fa-solid fa-clock mr-1" aria-hidden="true"></i> Snapshot Constraint</span>
+                <p>Snapshots cannot be backfilled! Daily capture must run from Day 1 to track AR aging &amp; forecast accuracy.</p>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <!-- Milestone 4 -->
+        <li data-aos="fade-up" data-aos-delay="250" class="phase-card data bg-surface border border-edge rounded-xl p-5 hover:border-edge/80 transition-all duration-300 hover:shadow-lg">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" class="milestone-check w-5 h-5 rounded border-edge text-brand focus:ring-brand cursor-pointer" aria-label="Mark milestone 4, Conformed Data Modelling & DQ Framework, as complete">
+              <span class="flex items-center justify-center w-8 h-8 rounded-full bg-brand/20 text-brand font-bold text-sm border border-brand/40" aria-hidden="true">4</span>
+              <span>
+                <h3 class="text-lg font-bold text-inkbright">Conformed Data Modelling &amp; DQ Framework</h3>
+                <span class="text-xs text-inkmuted block">Weeks 5 – 8 · Workstreams 4 &amp; 5</span>
+              </span>
+            </label>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 text-xs border border-slate-700">Core Transformation</span>
+              <button type="button" data-collapse-target="p4-body" aria-expanded="true" aria-controls="p4-body"
+                      class="p-1.5 rounded bg-surface2 border border-edge text-inkmuted hover:text-inkbright">
+                <i class="fa-solid fa-chevron-up transition-transform duration-200" aria-hidden="true"></i>
+                <span class="sr-only">Toggle milestone details</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="p4-body" class="mt-4 space-y-4">
+            <p class="text-sm text-inkmuted">Build conformed Silver models, cross-system entity matching (Customer, Vendor, Job), Gold finance products, and automated DQ profiling.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="bg-surface2 p-3.5 rounded-lg border border-edge">
+                <span class="text-brand font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1" aria-hidden="true"></i> Deliverables</span>
+                <ul class="list-disc list-inside space-y-1">
+                  <li>Conformed Silver &amp; Gold Data Products</li>
+                  <li>Cross-system entity matching engine</li>
+                  <li>DQ Rule Library &amp; Exception Register</li>
+                </ul>
+              </div>
+              <div class="bg-surface2 p-3.5 rounded-lg border border-edge">
+                <span class="text-amber-400 font-semibold block mb-1.5"><i class="fa-solid fa-user-gear mr-1" aria-hidden="true"></i> Remediation Loop</span>
+                <p>Issues are flagged automatically, but client teams perform source corrections before dashboard validation.</p>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <!-- Milestone 5 -->
+        <li data-aos="fade-up" data-aos-delay="300" class="phase-card analytics bg-surface border border-edge rounded-xl p-5 hover:border-edge/80 transition-all duration-300 hover:shadow-lg">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" class="milestone-check w-5 h-5 rounded border-edge text-brand focus:ring-brand cursor-pointer" aria-label="Mark milestone 5, Daily Finance Dashboard & Genie AI Query Space, as complete">
+              <span class="flex items-center justify-center w-8 h-8 rounded-full bg-brand/20 text-brand font-bold text-sm border border-brand/40" aria-hidden="true">5</span>
+              <span>
+                <h3 class="text-lg font-bold text-inkbright">Daily Finance Dashboard &amp; Genie AI Query Space</h3>
+                <span class="text-xs text-inkmuted block">Weeks 8 – 10 · Workstreams 6 &amp; 7</span>
+              </span>
+            </label>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded bg-purple-500/10 text-purple-400 text-xs border border-purple-500/30">Analytics &amp; AI</span>
+              <button type="button" data-collapse-target="p5-body" aria-expanded="true" aria-controls="p5-body"
+                      class="p-1.5 rounded bg-surface2 border border-edge text-inkmuted hover:text-inkbright">
+                <i class="fa-solid fa-chevron-up transition-transform duration-200" aria-hidden="true"></i>
+                <span class="sr-only">Toggle milestone details</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="p5-body" class="mt-4 space-y-4">
+            <p class="text-sm text-inkmuted">Deliver 7-area daily finance dashboard in Databricks SQL, role-based persona views, and natural-language querying via Databricks Genie.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="bg-surface2 p-3.5 rounded-lg border border-edge">
+                <span class="text-brand font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1" aria-hidden="true"></i> Deliverables</span>
+                <ul class="list-disc list-inside space-y-1">
+                  <li>Daily Finance Operating View Dashboard</li>
+                  <li>3 Persona Views (Executive, Controller, AR/AP)</li>
+                  <li>Curated Genie space &amp; metric validation</li>
+                </ul>
+              </div>
+              <div class="bg-surface2 p-3.5 rounded-lg border border-edge">
+                <span class="text-purple-400 font-semibold block mb-1.5"><i class="fa-solid fa-bell mr-1" aria-hidden="true"></i> Daily Freshness SLA</span>
+                <p>Refreshed dashboards and automated exception alerts delivered before start of business each working day.</p>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <!-- Milestone 6 -->
+        <li data-aos="fade-up" data-aos-delay="350" class="phase-card analytics bg-surface border border-edge rounded-xl p-5 hover:border-edge/80 transition-all duration-300 hover:shadow-lg">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" class="milestone-check w-5 h-5 rounded border-edge text-brand focus:ring-brand cursor-pointer" aria-label="Mark milestone 6, Validation, UAT, Production Handover & Hypercare, as complete">
+              <span class="flex items-center justify-center w-8 h-8 rounded-full bg-brand/20 text-brand font-bold text-sm border border-brand/40" aria-hidden="true">6</span>
+              <span>
+                <h3 class="text-lg font-bold text-inkbright">Validation, UAT, Production Handover &amp; Hypercare</h3>
+                <span class="text-xs text-inkmuted block">Weeks 10 – 12 · Workstream 8</span>
+              </span>
+            </label>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 text-xs border border-emerald-500/30">Go-Live</span>
+              <button type="button" data-collapse-target="p6-body" aria-expanded="true" aria-controls="p6-body"
+                      class="p-1.5 rounded bg-surface2 border border-edge text-inkmuted hover:text-inkbright">
+                <i class="fa-solid fa-chevron-up transition-transform duration-200" aria-hidden="true"></i>
+                <span class="sr-only">Toggle milestone details</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="p6-body" class="mt-4 space-y-4">
+            <p class="text-sm text-inkmuted">Reconcile data with legacy source systems, guide user acceptance testing, transition runbooks, and provide hypercare.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="bg-surface2 p-3.5 rounded-lg border border-edge">
+                <span class="text-brand font-semibold block mb-1.5"><i class="fa-solid fa-box-archive mr-1" aria-hidden="true"></i> Deliverables</span>
+                <ul class="list-disc list-inside space-y-1">
+                  <li>Reconciliation Pack vs Source Systems</li>
+                  <li>Production Release &amp; Technical Runbooks</li>
+                  <li>Post Go-Live Hypercare Support</li>
+                </ul>
+              </div>
+              <div class="bg-surface2 p-3.5 rounded-lg border border-edge">
+                <span class="text-emerald-400 font-semibold block mb-1.5"><i class="fa-solid fa-circle-check mr-1" aria-hidden="true"></i> Staged Value Release</span>
+                <p>Working output released and validated in stages rather than a single week 12 drop.</p>
+              </div>
+            </div>
+          </div>
+        </li>
+
+      </ul>
+    </section>
+
+    <!-- Daily Finance Operating View Scope -->
+    <section data-aos="fade-up" class="bg-surface border border-edge rounded-xl p-6 shadow-xl theme-shadow">
+      <h2 class="text-xl font-bold text-inkbright mb-2">Daily Finance Operating View Scope (6 Focus Areas)</h2>
+      <p class="text-xs text-inkmuted mb-6">Functional coverage required before start of business each working day.</p>
+      <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+        <li class="p-4 rounded-lg bg-surface2 border border-edge hover:-translate-y-1 transition-transform">
+          <div class="flex items-center gap-2 mb-2 font-semibold text-brand">
+            <i class="fa-solid fa-wallet text-amber-500" aria-hidden="true"></i> 1. Cash Position &amp; Liquidity
+          </div>
+          <p class="text-inkmuted">Current balance, 7-day forecast (AR/AP timing), inflows/outflows, funding risks.</p>
+        </li>
+        <li class="p-4 rounded-lg bg-surface2 border border-edge hover:-translate-y-1 transition-transform">
+          <div class="flex items-center gap-2 mb-2 font-semibold text-brand">
+            <i class="fa-solid fa-hand-holding-dollar text-emerald-400" aria-hidden="true"></i> 2. Receivables &amp; Collections
+          </div>
+          <p class="text-inkmuted">Cash collected yesterday, past-due accounts, commitments, billing disputes, daily priorities.</p>
+        </li>
+        <li class="p-4 rounded-lg bg-surface2 border border-edge hover:-translate-y-1 transition-transform">
+          <div class="flex items-center gap-2 mb-2 font-semibold text-brand">
+            <i class="fa-solid fa-file-invoice-dollar text-blue-400" aria-hidden="true"></i> 3. Accounts Payable
+          </div>
+          <p class="text-inkmuted">Critical vendor payments due, credit hold risk, approval bottlenecks, major disbursements.</p>
+        </li>
+        <li class="p-4 rounded-lg bg-surface2 border border-edge hover:-translate-y-1 transition-transform">
+          <div class="flex items-center gap-2 mb-2 font-semibold text-brand">
+            <i class="fa-solid fa-chart-line text-purple-400" aria-hidden="true"></i> 4. Billing &amp; Revenue Capture
+          </div>
+          <p class="text-inkmuted">Invoices issued yesterday, unbilled work, open change orders, unbilled revenue at risk.</p>
+        </li>
+        <li class="p-4 rounded-lg bg-surface2 border border-edge hover:-translate-y-1 transition-transform">
+          <div class="flex items-center gap-2 mb-2 font-semibold text-brand">
+            <i class="fa-solid fa-scale-balanced text-orange-400" aria-hidden="true"></i> 5. Controls &amp; Close
+          </div>
+          <p class="text-inkmuted">Approval delays, reconciliation exceptions, items needing action, month-end close progress.</p>
+        </li>
+        <li class="p-4 rounded-lg bg-surface2 border border-edge hover:-translate-y-1 transition-transform">
+          <div class="flex items-center gap-2 mb-2 font-semibold text-brand">
+            <i class="fa-solid fa-user-check text-teal-400" aria-hidden="true"></i> 6. Payroll &amp; Compliance
+          </div>
+          <p class="text-inkmuted">Payroll readiness, missing timesheets, expense reports, tax &amp; compliance alerts.</p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Data engineering enhancements -->
+    <section data-aos="fade-up" class="bg-gradient-to-r from-surface via-bg to-surface border border-brand/30 rounded-xl p-6 shadow-2xl">
+      <div class="flex items-center gap-3 mb-4">
+        <i class="fa-solid fa-lightbulb text-2xl text-yellow-400 animate-pulse" aria-hidden="true"></i>
+        <div>
+          <h2 class="text-xl font-bold text-inkbright">Data Engineering Enhancements &amp; Risk Mitigations</h2>
+          <p class="text-xs text-inkmuted">Proactive architectural recommendations to strengthen Phase 1 execution.</p>
+        </div>
+      </div>
+      <ul class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <li class="p-4 rounded-lg bg-surface2/80 border border-edge">
+          <h3 class="font-bold text-brand mb-1">1. Adopt Delta Live Tables (DLT) for Ingestion &amp; DQ</h3>
+          <p class="text-inkmuted">Instead of raw PySpark scripts, utilize Databricks DLT for Bronze/Silver. DLT offers built-in expectations for DQ thresholds, auto-lineage, and automatic pipeline retries with zero manual orchestration setup.</p>
+        </li>
+        <li class="p-4 rounded-lg bg-surface2/80 border border-edge">
+          <h3 class="font-bold text-brand mb-1">2. Synthetic Snapshot Backfill Strategy</h3>
+          <p class="text-inkmuted">Since daily snapshots cannot be backfilled from source systems, create a synthetic backfill script using historical log tables during Week 2 to give executives 90-day trendlines immediately on Day 1.</p>
+        </li>
+        <li class="p-4 rounded-lg bg-surface2/80 border border-edge">
+          <h3 class="font-bold text-brand mb-1">3. FinOps &amp; Serverless Compute Governance</h3>
+          <p class="text-inkmuted">Enforce Databricks Serverless SQL for Genie &amp; Dashboards, and set auto-termination on ETL clusters to 15 minutes. Implement budget alert webhooks to prevent compute cost surprises.</p>
+        </li>
+        <li class="p-4 rounded-lg bg-surface2/80 border border-edge">
+          <h3 class="font-bold text-brand mb-1">4. Contractual SLA on Client Source Remediation</h3>
+          <p class="text-inkmuted">Establish a strict 48-hour client SLA for fixing source-side data errors. Add an automated fallback layer to quarantine bad records so remaining clean data can still populate morning dashboards.</p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Execution team -->
+    <section data-aos="fade-up" class="bg-surface border border-edge rounded-xl p-6 shadow-xl theme-shadow">
+      <div class="mb-6">
+        <h2 class="text-xl font-bold text-inkbright">Proposed Execution Team &amp; Leadership</h2>
+        <p class="text-sm text-inkmuted mt-1">Dedicated domain experts deployed by Invotech Services to deliver Phase 1 milestones securely and on schedule.</p>
+      </div>
+
+      <div class="mb-6">
+        <h3 class="text-sm font-semibold text-brand mb-3 border-b border-edge/60 pb-2">Core Project Resourcing Needs</h3>
+        <ul class="flex flex-wrap gap-3 text-xs">
+          <li class="px-3 py-1.5 rounded-lg bg-bg border border-edge text-inkmuted font-medium hover:scale-105 transition-transform"><i class="fa-solid fa-sitemap text-blue-400 mr-1.5" aria-hidden="true"></i> 1x Solution Architect</li>
+          <li class="px-3 py-1.5 rounded-lg bg-bg border border-edge text-inkmuted font-medium hover:scale-105 transition-transform"><i class="fa-solid fa-code text-yellow-400 mr-1.5" aria-hidden="true"></i> 1x Senior Data Engineer</li>
+          <li class="px-3 py-1.5 rounded-lg bg-bg border border-edge text-inkmuted font-medium hover:scale-105 transition-transform"><i class="fa-solid fa-server text-emerald-400 mr-1.5" aria-hidden="true"></i> 1x DevOps Engineer</li>
+          <li class="px-3 py-1.5 rounded-lg bg-bg border border-edge text-inkmuted font-medium hover:scale-105 transition-transform"><i class="fa-solid fa-diagram-project text-purple-400 mr-1.5" aria-hidden="true"></i> 1x Business Analyst (Knowledge Graph Expert)</li>
+        </ul>
+      </div>
+
+      <ul class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <li class="p-5 rounded-lg bg-bg border border-edge relative overflow-hidden flex flex-col group hover:border-blue-500/50 transition-colors">
+          <div class="absolute top-0 right-0 p-2 bg-blue-500/10 rounded-bl-lg border-b border-l border-blue-500/20 group-hover:bg-blue-500/20 transition-colors" aria-hidden="true">
+            <i class="fa-solid fa-user-tie text-blue-400 text-sm"></i>
+          </div>
+          <h4 class="font-bold text-inkbright text-base">Neeraj Mittra</h4>
+          <p class="text-xs text-blue-400 font-medium mb-3 uppercase tracking-wider">Account manager</p>
+          <p class="text-xs text-inkmuted leading-relaxed mt-auto">Drives overall project governance, timeline execution, and cross-functional alignment. Responsible for ensuring technical milestones map precisely to business value and SLAs.</p>
+        </li>
+
+        <li class="p-5 rounded-lg bg-bg border border-edge relative overflow-hidden flex flex-col group hover:border-brand/50 transition-colors">
+          <div class="absolute top-0 right-0 p-2 bg-brand/10 rounded-bl-lg border-b border-l border-brand/20 group-hover:bg-brand/20 transition-colors" aria-hidden="true">
+            <i class="fa-solid fa-network-wired text-brand text-sm"></i>
+          </div>
+          <h4 class="font-bold text-inkbright text-base">Ashish Golccha</h4>
+          <p class="text-xs text-brand font-medium mb-3 uppercase tracking-wider">Solution Architect</p>
+          <p class="text-xs text-inkmuted leading-relaxed mt-auto">
+            <strong>9+ years of experience.</strong> Currently a Senior Specialist at MSD. Expert in architecting scalable data solutions across analytics domains. Brings deep, proven expertise in AWS (Glue, Redshift, S3), PySpark, Databricks, enterprise knowledge graph mapping, ontology design, and establishing end-to-end, cost-optimized enterprise pipelines.
+          </p>
+        </li>
+
+        <li class="p-5 rounded-lg bg-bg border border-edge relative overflow-hidden flex flex-col group hover:border-emerald-500/50 transition-colors">
+          <div class="absolute top-0 right-0 p-2 bg-emerald-500/10 rounded-bl-lg border-b border-l border-emerald-500/20 group-hover:bg-emerald-500/20 transition-colors" aria-hidden="true">
+            <i class="fa-solid fa-microchip text-emerald-400 text-sm"></i>
+          </div>
+          <h4 class="font-bold text-inkbright text-base">Tejas Anand</h4>
+          <p class="text-xs text-emerald-400 font-medium mb-3 uppercase tracking-wider">Senior Semantic/AI Engineer</p>
+          <p class="text-xs text-inkmuted leading-relaxed mt-auto">
+            <strong>5.5+ years of experience.</strong> Specializes in designing robust cloud-native data pipelines on AWS and Databricks. Deep expertise in PySpark, Unity Catalog governance, orchestrating CI/CD with Databricks Asset Bundles, knowledge graph modeling, semantic ontology architecture, and integrating OpenAI APIs to bridge Medallion Architectures for accelerated insights.
+          </p>
+        </li>
+      </ul>
+
+      <div class="mt-5 p-3.5 rounded-lg bg-slate-800/40 border border-slate-700/60 text-xs text-inkmuted flex items-center gap-2">
+        <i class="fa-solid fa-clock-rotate-left text-slate-500" aria-hidden="true"></i>
+        <span><em>Note: Specific personnel for the DevOps Engineer and Business Analyst (Knowledge Graph) roles are currently TBD and will be formally allocated prior to project kick-off.</em></span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Tech detail modal -->
+  <div id="tech-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="bg-surface border border-edge rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl relative transition-transform transform scale-95" id="modal-content">
+      <button type="button" data-close-modal class="absolute top-4 right-4 text-inkmuted hover:text-inkbright transition-colors">
+        <i class="fa-solid fa-xmark text-lg" aria-hidden="true"></i>
+        <span class="sr-only">Close</span>
+      </button>
+      <div class="flex items-center gap-3">
+        <div id="modal-icon-container" class="p-2.5 rounded-lg bg-bg border border-edge text-2xl" aria-hidden="true"></div>
+        <h3 id="modal-title" class="text-lg font-bold text-inkbright"></h3>
+      </div>
+      <p id="modal-desc" class="text-xs text-inkmuted leading-relaxed"></p>
+      <button type="button" data-close-modal class="w-full py-2 bg-brand text-white rounded-lg text-xs font-semibold hover:bg-brand/90 transition">Close Overview</button>
+    </div>
+  </div>
+
+  <footer class="border-t border-edge py-6 bg-headerbg mt-12">
+    <div class="max-w-7xl mx-auto px-4 text-center flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2 group">
+        <img src="Logo 2 green blue.png" alt="Invotech Services logo" class="h-5 opacity-70 filter grayscale brightness-200 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
+             onerror="this.onerror=null;this.src='https://via.placeholder.com/150x50?text=Logo';">
+        <span class="text-xs text-inkmuted border-l border-slate-600 pl-2 ml-1">Databricks Phase 1 Architecture Plan</span>
+      </div>
+      <div class="text-xs text-inkmuted">Proprietary &amp; Confidential</div>
+    </div>
+  </footer>
+
+  <!-- Scroll-reveal animation library -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
+
+  <script defer>
+    (function () {
+      'use strict';
+
+      // ---------------------------------------------------------------
+      // Data for the tech detail modal
+      // ---------------------------------------------------------------
+      const MODAL_DATA = {
+        databricks: {
+          title: 'Databricks Lakehouse Platform',
+          icon: '<i class="fa-solid fa-database text-brand"></i>',
+          desc: 'Serves as the unified analytics platform hosting Delta Lake storage under Medallion architecture (Bronze/Silver/Gold). Runs PySpark ETL, Databricks Workflows, and Databricks SQL.',
+        },
+        sqlserver: {
+          title: 'SQL Server (Internal Portal)',
+          icon: '<i class="devicon-microsoftsqlserver-plain text-blue-400"></i>',
+          desc: 'In-scope operational database housing field assignments, job transactions, equipment history, and operator logs.',
+        },
+        bc: {
+          title: 'Dynamics 365 Business Central',
+          icon: '<i class="fa-solid fa-building-columns text-blue-500"></i>',
+          desc: 'Core ERP system providing General Ledger, AR/AP, Invoices, Costs, Revenue, Assets, and Rental Ticket records.',
+        },
+        hubspot: {
+          title: 'HubSpot CRM',
+          icon: '<i class="fa-brands fa-hubspot text-orange-500"></i>',
+          desc: 'Commercial sales platform source for Companies, Contacts, Deals, Pipeline Stages, and Deal Ownership metrics.',
+        },
+        pyspark: {
+          title: 'PySpark & Delta Lake',
+          icon: '<i class="devicon-python-plain text-yellow-400"></i>',
+          desc: 'Primary data engine used for distributed batch/incremental data processing, snapshot creation, and schema enforcement.',
+        },
+        uc: {
+          title: 'Unity Catalog Governance',
+          icon: '<i class="fa-solid fa-shield-halved text-emerald-400"></i>',
+          desc: 'Unified governance layer controlling centralized row and column-level access control, data lineage, and audit logging across environments.',
+        },
+        genie: {
+          title: 'Databricks Genie AI / BI',
+          icon: '<i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i>',
+          desc: 'Governed AI space enabling natural language query capabilities over Gold finance datasets with curated metric definitions.',
+        },
+      };
+
+      // ---------------------------------------------------------------
+      // Modal: open / close, focus trap, Escape-to-close, click-outside
+      // ---------------------------------------------------------------
+      const modal = document.getElementById('tech-modal');
+      const modalContent = document.getElementById('modal-content');
+      const modalTitle = document.getElementById('modal-title');
+      const modalDesc = document.getElementById('modal-desc');
+      const modalIcon = document.getElementById('modal-icon-container');
+      let lastFocusedElement = null;
+
+      function openModal(key) {
+        const item = MODAL_DATA[key];
+        if (!item) return;
+
+        lastFocusedElement = document.activeElement;
+        modalTitle.textContent = item.title;
+        modalIcon.innerHTML = item.icon;
+        modalDesc.textContent = item.desc;
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        requestAnimationFrame(() => {
+          modalContent.classList.remove('scale-95');
+          modalContent.classList.add('scale-100');
         });
-    </script>
 
-    <!-- Interactive Scripts -->
-    <script>
-        // Modal Data
-        const modalData = {
-            databricks: {
-                title: "Databricks Lakehouse Platform",
-                icon: '<i class="fa-solid fa-database text-db-orange"></i>',
-                desc: "Serves as the unified analytics platform hosting Delta Lake storage under Medallion architecture (Bronze/Silver/Gold). Runs PySpark ETL, Databricks Workflows, and Databricks SQL."
-            },
-            sqlserver: {
-                title: "SQL Server (Internal Portal)",
-                icon: '<i class="devicon-microsoftsqlserver-plain text-blue-400"></i>',
-                desc: "In-scope operational database housing field assignments, job transactions, equipment history, and operator logs."
-            },
-            bc: {
-                title: "Dynamics 365 Business Central",
-                icon: '<i class="fa-solid fa-building-columns text-blue-500"></i>',
-                desc: "Core ERP system providing General Ledger, AR/AP, Invoices, Costs, Revenue, Assets, and Rental Ticket records."
-            },
-            hubspot: {
-                title: "HubSpot CRM",
-                icon: '<i class="fa-brands fa-hubspot text-orange-500"></i>',
-                desc: "Commercial sales platform source for Companies, Contacts, Deals, Pipeline Stages, and Deal Ownership metrics."
-            },
-            pyspark: {
-                title: "PySpark & Delta Lake",
-                icon: '<i class="devicon-python-plain text-yellow-400"></i>',
-                desc: "Primary data engine used for distributed batch/incremental data processing, snapshot creation, and schema enforcement."
-            },
-            uc: {
-                title: "Unity Catalog Governance",
-                icon: '<i class="fa-solid fa-shield-halved text-emerald-400"></i>',
-                desc: "Unified governance layer controlling centralized row and column-level access control, data lineage, and audit logging across environments."
-            },
-            genie: {
-                title: "Databricks Genie AI / BI",
-                icon: '<i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i>',
-                desc: "Governed AI space enabling natural language query capabilities over Gold finance datasets with curated metric definitions."
-            }
-        };
+        const closeBtn = modal.querySelector('[data-close-modal]');
+        if (closeBtn) closeBtn.focus();
+      }
 
-        function openModal(key) {
-            const item = modalData[key];
-            if (!item) return;
-            document.getElementById('modal-title').innerText = item.title;
-            document.getElementById('modal-icon-container').innerHTML = item.icon;
-            document.getElementById('modal-desc').innerText = item.desc;
-            
-            const modal = document.getElementById('tech-modal');
-            const modalContent = document.getElementById('modal-content');
-            modal.classList.remove('hidden');
-            
-            // Add a small bounce animation when opening
-            setTimeout(() => {
-                modalContent.classList.remove('scale-95');
-                modalContent.classList.add('scale-100');
-            }, 10);
+      function closeModal() {
+        modalContent.classList.remove('scale-100');
+        modalContent.classList.add('scale-95');
+
+        window.setTimeout(() => {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+          if (lastFocusedElement) lastFocusedElement.focus();
+        }, 200);
+      }
+
+      document.addEventListener('click', (event) => {
+        const trigger = event.target.closest('[data-modal]');
+        if (trigger) {
+          openModal(trigger.dataset.modal);
+          return;
         }
-
-        function closeModal() {
-            const modal = document.getElementById('tech-modal');
-            const modalContent = document.getElementById('modal-content');
-            
-            modalContent.classList.remove('scale-100');
-            modalContent.classList.add('scale-95');
-            
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 200);
+        if (event.target.closest('[data-close-modal]')) {
+          closeModal();
+          return;
         }
+        // Click on the dark backdrop itself (not its content) closes the modal.
+        if (event.target === modal) {
+          closeModal();
+        }
+      });
 
-        // Dark / Light Theme Toggle
-        const themeBtn = document.getElementById('toggle-theme');
-        const themeIcon = document.getElementById('theme-icon');
-        const themeText = document.getElementById('theme-text');
+      document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape' || modal.classList.contains('hidden')) return;
+        closeModal();
+      });
 
-        themeBtn.addEventListener('click', () => {
-            const isDark = document.documentElement.classList.toggle('dark');
-            if (isDark) {
-                themeIcon.className = "fa-solid fa-sun text-amber-400";
-                themeText.innerText = "Light Mode";
-            } else {
-                themeIcon.className = "fa-solid fa-moon text-indigo-600";
-                themeText.innerText = "Dark Mode";
-            }
+      // Basic focus trap while the modal is open.
+      modal.addEventListener('keydown', (event) => {
+        if (event.key !== 'Tab' || modal.classList.contains('hidden')) return;
+        const focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      });
+
+      // ---------------------------------------------------------------
+      // Dark / light theme toggle
+      // ---------------------------------------------------------------
+      const themeBtn = document.getElementById('toggle-theme');
+      const themeIcon = document.getElementById('theme-icon');
+      const themeText = document.getElementById('theme-text');
+
+      themeBtn.addEventListener('click', () => {
+        const isDark = document.documentElement.classList.toggle('dark');
+        themeBtn.setAttribute('aria-pressed', String(!isDark));
+        if (isDark) {
+          themeIcon.className = 'fa-solid fa-sun text-amber-400';
+          themeText.textContent = 'Light Mode';
+        } else {
+          themeIcon.className = 'fa-solid fa-moon text-indigo-600';
+          themeText.textContent = 'Dark Mode';
+        }
+      });
+
+      // ---------------------------------------------------------------
+      // Milestone progress tracker
+      // ---------------------------------------------------------------
+      const progressBar = document.getElementById('progress-bar');
+      const progressText = document.getElementById('progress-text');
+      const progressTrack = document.getElementById('progress-track');
+
+      function updateProgress() {
+        const checkboxes = document.querySelectorAll('.milestone-check');
+        const total = checkboxes.length;
+        let checked = 0;
+        checkboxes.forEach((cb) => { if (cb.checked) checked += 1; });
+        const percentage = total ? Math.round((checked / total) * 100) : 0;
+
+        progressBar.style.width = percentage + '%';
+        progressText.textContent = `${checked} of ${total} Milestones Completed (${percentage}%)`;
+        progressTrack.setAttribute('aria-valuenow', String(percentage));
+      }
+
+      document.querySelectorAll('.milestone-check').forEach((cb) => {
+        cb.addEventListener('change', updateProgress);
+      });
+
+      // ---------------------------------------------------------------
+      // Workstream filtering
+      // ---------------------------------------------------------------
+      const filterButtons = document.querySelectorAll('.filter-btn');
+
+      filterButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          filterButtons.forEach((b) => {
+            b.classList.remove('bg-brand', 'text-white', 'active');
+            b.classList.add('text-inkmuted');
+            b.setAttribute('aria-pressed', 'false');
+          });
+          btn.classList.add('bg-brand', 'text-white', 'active');
+          btn.classList.remove('text-inkmuted');
+          btn.setAttribute('aria-pressed', 'true');
+
+          const category = btn.dataset.filter;
+          document.querySelectorAll('.phase-card').forEach((card) => {
+            const show = category === 'all' || card.classList.contains(category);
+            card.style.display = show ? '' : 'none';
+          });
         });
+      });
 
-        // Milestone Progress Calculation
-        function updateProgress() {
-            const checkboxes = document.querySelectorAll('.milestone-check');
-            const total = checkboxes.length;
-            let checked = 0;
-            checkboxes.forEach(cb => { if (cb.checked) checked++; });
-            const percentage = Math.round((checked / total) * 100);
-            
-            document.getElementById('progress-bar').style.width = percentage + '%';
-            document.getElementById('progress-text').innerText = `${checked} of ${total} Milestones Completed (${percentage}%)`;
+      // ---------------------------------------------------------------
+      // Collapsible milestone bodies
+      // ---------------------------------------------------------------
+      document.addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-collapse-target]');
+        if (!btn) return;
+        const body = document.getElementById(btn.dataset.collapseTarget);
+        if (!body) return;
+        const icon = btn.querySelector('i');
+        const isHidden = body.classList.toggle('hidden');
+        btn.setAttribute('aria-expanded', String(!isHidden));
+        if (icon) icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+      });
+
+      // ---------------------------------------------------------------
+      // AOS init + safety net: if the AOS library fails to load from its
+      // CDN (blocked network, offline use, ad-blocker), content must
+      // still be readable rather than staying invisible forever.
+      // ---------------------------------------------------------------
+      function revealAllSections() {
+        document.querySelectorAll('[data-aos]').forEach((el) => el.classList.add('aos-animate'));
+      }
+
+      window.addEventListener('load', () => {
+        if (window.AOS) {
+          try {
+            window.AOS.init({ duration: 800, once: true, offset: 100 });
+          } catch (err) {
+            console.error('AOS failed to initialize — showing all sections without animation.', err);
+            revealAllSections();
+          }
+        } else {
+          console.warn('AOS did not load from its CDN — showing all sections without animation.');
+          revealAllSections();
         }
+      });
 
-        // Category Filtering
-        function filterCategory(cat, btnElement) {
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('bg-db-orange', 'text-white');
-                btn.classList.add('text-slate-400');
-            });
-            btnElement.classList.add('bg-db-orange', 'text-white');
-            btnElement.classList.remove('text-slate-400');
+      // Absolute fallback in case 'load' itself is delayed by a slow/blocked
+      // resource: never leave content hidden for more than a couple seconds.
+      window.setTimeout(revealAllSections, 2500);
 
-            const cards = document.querySelectorAll('.phase-card');
-            cards.forEach(card => {
-                if (cat === 'all' || card.classList.contains(cat)) {
-                    card.style.display = 'block';
-                    // Re-trigger AOS animations if needed
-                    card.classList.remove('aos-animate');
-                    setTimeout(() => card.classList.add('aos-animate'), 50);
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
-
-        // Collapsible Cards
-        function toggleCollapse(bodyId, btn) {
-            const body = document.getElementById(bodyId);
-            const icon = btn.querySelector('i');
-            if (body.classList.contains('hidden')) {
-                body.classList.remove('hidden');
-                icon.style.transform = 'rotate(0deg)';
-            } else {
-                body.classList.add('hidden');
-                icon.style.transform = 'rotate(180deg)';
-            }
-        }
-    </script>
+      updateProgress();
+    })();
+  </script>
 </body>
 </html>
