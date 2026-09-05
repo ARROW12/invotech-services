@@ -147,7 +147,7 @@
     <!-- Main Container -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
 
-        <!-- Overview Section (New) -->
+        <!-- Overview Section -->
         <section data-aos="fade-up" class="theme-card bg-db-card border border-db-border rounded-xl p-6 shadow-xl relative overflow-hidden">
             <div class="absolute top-0 right-0 p-20 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
             <h2 class="text-2xl font-bold theme-text-bright text-white mb-3">Project & Company Overview</h2>
@@ -159,7 +159,7 @@
             </p>
         </section>
 
-        <!-- POV Reusability Section (Moved up) -->
+        <!-- POV Reusability Section -->
         <section data-aos="fade-up" data-aos-delay="100" class="theme-card bg-gradient-to-r from-db-card via-slate-800/40 to-db-card border border-emerald-500/30 rounded-xl p-6 shadow-xl relative overflow-hidden">
             <div class="absolute top-0 right-0 p-16 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
             <div class="relative z-10 flex items-start gap-4">
@@ -176,7 +176,7 @@
             </div>
         </section>
 
-        <!-- Visual Architecture Diagram Section (Moved down & larger diagram) -->
+        <!-- Visual Architecture Diagram Section -->
         <section data-aos="zoom-in" data-aos-delay="200" class="theme-card bg-db-card rounded-xl p-6 border border-db-border shadow-xl space-y-6">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-db-border/60 pb-4">
                 <div>
@@ -193,35 +193,47 @@
             <div class="w-full flex justify-center overflow-hidden bg-db-navy/50 p-6 rounded-xl border border-db-border/50">
                 <pre class="mermaid w-full flex justify-center">
                 flowchart LR
-                    classDef source fill:#151E28,stroke:#3B82F6,stroke-width:1px,color:#E2E8F0;
+                    %% Styling definition
+                    classDef default fill:#1B252C,stroke:#2C3B47,stroke-width:1px,color:#F1F5F9,rx:6px,ry:6px;
+                    classDef source fill:#151E28,stroke:#3B82F6,stroke-width:1.5px,color:#93C5FD;
                     classDef dbx fill:#1B252C,stroke:#FF3621,stroke-width:2px,color:#fff;
-                    classDef gov fill:#1B252C,stroke:#10B981,stroke-width:1px,color:#E2E8F0;
-                    classDef ai fill:#1B252C,stroke:#A855F7,stroke-width:1px,color:#E2E8F0;
+                    classDef gov fill:#0B131B,stroke:#10B981,stroke-width:1.5px,color:#6EE7B7,stroke-dasharray: 4 4;
+                    classDef ai fill:#151E28,stroke:#A855F7,stroke-width:1.5px,color:#D8B4FE;
 
                     subgraph Sources["1. Source Systems"]
                         direction TB
-                        SQL["SQL Server<br/>(Internal)"]:::source
-                        BC["Business Central<br/>(ERP)"]:::source
-                        HubSpot["HubSpot<br/>(CRM)"]:::source
+                        SQL["`**SQL Server**
+                        (Internal)`"]:::source
+                        BC["`**Business Central**
+                        (ERP)`"]:::source
+                        HubSpot["`**HubSpot**
+                        (CRM)`"]:::source
                     end
 
                     subgraph Medallion["2. Databricks Medallion Layer"]
                         direction LR
-                        Bronze["Bronze<br/>(Raw API & Snapshots)"]:::dbx
-                        Silver["Silver<br/>(Conformed & Matched)"]:::dbx
-                        Gold["Gold<br/>(Finance Data Products)"]:::dbx
+                        Bronze["`**Bronze**
+                        (Raw API & Snapshots)`"]:::dbx
+                        Silver["`**Silver**
+                        (Conformed & Matched)`"]:::dbx
+                        Gold["`**Gold**
+                        (Finance Data Products)`"]:::dbx
                     end
 
-                    subgraph Governance["3. Governance & Security"]
-                        UC["Unity Catalog<br/>(Row/Column RBAC)"]:::gov
-                    end
-
-                    subgraph Consumption["4. Business Serving"]
+                    subgraph Consumption["3. Business Serving"]
                         direction TB
-                        Dash["Finance Operating View<br/>(Dashboards)"]:::ai
-                        Genie["Genie AI<br/>(Natural Language)"]:::ai
+                        Dash["`**Operating View**
+                        (Dashboards)`"]:::ai
+                        Genie["`**Genie AI**
+                        (Natural Language)`"]:::ai
                     end
 
+                    subgraph Governance["Governance & Security"]
+                        UC["`**Unity Catalog**
+                        (Row/Column RBAC)`"]:::gov
+                    end
+
+                    %% Flow Relationships
                     SQL --> Bronze
                     BC --> Bronze
                     HubSpot --> Bronze
@@ -229,12 +241,13 @@
                     Bronze --> Silver
                     Silver --> Gold
 
+                    Gold --> Dash
+                    Gold --> Genie
+
+                    %% Governance Links (Dotted)
                     UC -.- Bronze
                     UC -.- Silver
                     UC -.- Gold
-
-                    Gold --> Dash
-                    Gold --> Genie
                 </pre>
             </div>
 
@@ -671,7 +684,7 @@
             </div>
         </section>
 
-        <!-- Execution Team & Leadership (Moved to Last) -->
+        <!-- Execution Team & Leadership -->
         <section data-aos="fade-up" class="theme-card bg-db-card border border-db-border rounded-xl p-6 shadow-xl">
             <div class="mb-6">
                 <h2 class="text-xl font-bold theme-text-bright text-white">Proposed Execution Team & Leadership</h2>
