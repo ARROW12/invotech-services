@@ -123,30 +123,6 @@
   [data-aos] { opacity: 1; }
 </style>
 
-<!-- Mermaid.js (diagram rendering). Any failure here is caught so it can
-     never break the rest of the page. -->
-<script type="module">
-  try {
-    const { default: mermaid } = await import('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs');
-    mermaid.initialize({
-      startOnLoad: true,
-      theme: 'base',
-      themeVariables: {
-        background: 'transparent',
-        primaryColor: '#1B252C',
-        primaryTextColor: '#F1F5F9',
-        primaryBorderColor: '#2C3B47',
-        lineColor: '#64748B',
-        secondaryColor: '#FF3621',
-        tertiaryColor: '#151E28',
-        fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-      },
-      securityLevel: 'loose',
-    });
-  } catch (err) {
-    console.error('Mermaid failed to load — the architecture diagram will show as plain text.', err);
-  }
-</script>
 </head>
 <body class="bg-bg text-ink font-sans antialiased min-h-screen transition-colors duration-200 overflow-x-hidden">
 
@@ -314,7 +290,7 @@
       </div>
 
       <div class="flex justify-center w-full overflow-hidden bg-bg/50 p-4 sm:p-8 rounded-xl border border-edge/50 hover:border-edge transition-colors">
-        <pre class="mermaid w-full">
+        <pre id="architecture-diagram" class="mermaid w-full">
 flowchart LR
     classDef source fill:#151E28,stroke:#3B82F6,stroke-width:1px,color:#E2E8F0;
     classDef dbx fill:#1B252C,stroke:#FF3621,stroke-width:2px,color:#fff;
@@ -359,6 +335,10 @@ flowchart LR
     Gold --> Dash
     Gold --> Genie
         </pre>
+        <div id="diagram-fallback" class="hidden w-full p-6 text-center text-xs text-inkmuted border border-dashed border-edge rounded-lg">
+          <i class="fa-solid fa-triangle-exclamation text-amber-400 mr-1.5" aria-hidden="true"></i>
+          The interactive diagram couldn't load (likely a blocked script or offline connection). The data flow is: <strong>SQL Server, Business Central &amp; HubSpot → Bronze → Silver → Gold → Finance Dashboards &amp; Genie AI</strong>, governed end-to-end by Unity Catalog.
+        </div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 text-xs">
@@ -916,6 +896,52 @@ flowchart LR
       <div class="text-xs text-inkmuted">Proprietary &amp; Confidential</div>
     </div>
   </footer>
+
+  <!-- Mermaid.js (diagram rendering). Placed at the end of body, after the
+       <pre class="mermaid"> block it targets, per Mermaid's own recommended
+       pattern. Any failure here is caught so it can never break the rest of
+       the page — the plain-text fallback panel above is revealed instead. -->
+  <script type="module">
+    const fallback = document.getElementById('diagram-fallback');
+    const diagramEl = document.getElementById('architecture-diagram');
+
+    // If mermaid hasn't turned the <pre> into an <svg> within 6 seconds
+    // (CDN blocked, offline, slow network), show the readable fallback.
+    const fallbackTimer = window.setTimeout(() => {
+      if (diagramEl && !diagramEl.querySelector('svg')) {
+        diagramEl.classList.add('hidden');
+        if (fallback) fallback.classList.remove('hidden');
+      }
+    }, 6000);
+
+    try {
+      const { default: mermaid } = await import('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs');
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: 'base',
+        themeVariables: {
+          background: 'transparent',
+          primaryColor: '#1B252C',
+          primaryTextColor: '#F1F5F9',
+          primaryBorderColor: '#2C3B47',
+          lineColor: '#64748B',
+          secondaryColor: '#FF3621',
+          tertiaryColor: '#151E28',
+          fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        },
+        securityLevel: 'loose',
+      });
+      // Explicit run() alongside startOnLoad as a safety net — avoids any
+      // race where the page's load event fires before this module resolves.
+      await mermaid.run({ querySelector: '.mermaid' });
+      window.clearTimeout(fallbackTimer);
+    } catch (err) {
+      console.error('Mermaid failed to load — showing the plain-text fallback instead.', err);
+      window.clearTimeout(fallbackTimer);
+      if (diagramEl) diagramEl.classList.add('hidden');
+      if (fallback) fallback.classList.remove('hidden');
+    }
+  </script>
 
   <!-- Scroll-reveal animation library -->
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
